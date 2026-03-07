@@ -1,6 +1,9 @@
 import {Award, ChevronRight, LogOut, Target, TrendingUp} from "lucide-react";
+import {useNavigate} from "react-router";
 
 export default function Profile() {
+
+    const navigate = useNavigate();
 
     const user = [{
         id: 1, name: "Jan Novak", memberSince: "12.1.2025"
@@ -69,7 +72,7 @@ export default function Profile() {
             {menuItems.map((item, index) => (
               <button
                 key={index}
-                // onClick={() => item.path && navigate(item.path)}
+                onClick={() => item.path && navigate(item.path)}
                 className="w-full flex items-center justify-between py-4 border-b border-gray-100 active:bg-gray-50 transition-colors"
               >
                 <span>{item.label}</span>

@@ -1,6 +1,7 @@
 // import React from "react";
 
 import {BarChart3, Clock, Target, TrendingUp, Users, History} from "lucide-react";
+import {Link} from "react-router-dom";
 
 export default function Hero() {
 
@@ -38,18 +39,18 @@ export default function Hero() {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="border border-gray-300 rounded-lg p-4 text-center">
+                <Link to={'/statistics'} className="border border-gray-300 rounded-lg p-4 text-center active:bg-gray-50">
                     <BarChart3 className="size-6 mx-auto mb-2" strokeWidth={1.5} />
                     <p className="text-xs font-light mb-1">Statistiky</p>
-                </div>
-                <div className="border border-gray-300 rounded-lg p-4 text-center">
+                </Link>
+                <Link to={'/leaderboard'} className="border border-gray-300 rounded-lg p-4 text-center active:bg-gray-50">
                     <Users className="size-6 mx-auto mb-2" strokeWidth={1.5} />
                     <p className="text-xs">Žebříček</p>
-                </div>
-                <div className="border border-gray-300 rounded-lg p-4 text-center">
+                </Link>
+                <Link to={'/history'} className="border border-gray-300 rounded-lg p-4 text-center active:bg-gray-50">
                     <History className="size-6 mx-auto mb-2" strokeWidth={1.5} />
                     <p className="text-xs">Historie</p>
-                </div>
+                </Link>
             </div>
 
             <div>

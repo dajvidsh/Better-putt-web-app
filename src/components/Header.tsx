@@ -1,4 +1,4 @@
-import {Menu, Award} from 'lucide-react';
+import {Award} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {useState} from "react";
 
@@ -8,9 +8,9 @@ export default function Header() {
   return (
     <header className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between px-6 py-4">
-        <button onClick={() => setIsOpen(!isOpen)} className="p-2 -ml-2 active:opacity-50 transition-opacity">
-          <Menu className="size-5" />
-        </button>
+        {/*<button onClick={() => setIsOpen(!isOpen)} className="p-2 -ml-2 active:opacity-50 transition-opacity">*/}
+        {/*  <Menu className="size-5" />*/}
+        {/*</button>*/}
 
         <h1 className="text-sm font-normal tracking-wide">
           <Link to={'/'} className="text-slate-900">BETTER PUTT</Link>

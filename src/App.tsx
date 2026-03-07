@@ -8,6 +8,8 @@ import Training from "./pages/Training.tsx";
 import TrainingDetail from "./pages/TrainingDetail.tsx";
 import LeaderBoard from "./pages/LeaderBoard.tsx";
 import Profile from "./pages/Profile.tsx";
+import Statistics from "./pages/Statistics.tsx";
+import History from "./pages/History.tsx";
 
 const Home = () => (
   <>
@@ -26,6 +28,8 @@ function App() {
                 <Route path="/training/:gameId" element={<TrainingDetail />} />
                 <Route path="/leaderboard" element={<LeaderBoard />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/statistics" element={<Statistics />} />
+                <Route path="/history" element={<History />} />
             </Routes>
 
             <BottomNav />
