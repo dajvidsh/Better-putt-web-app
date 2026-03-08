@@ -1,4 +1,4 @@
-import {ChevronRight, Flame, Target, TrendingUp, Zap} from "lucide-react";
+import {ChevronRight, Flame, Repeat, Target, Zap} from "lucide-react";
 import {useNavigate} from "react-router";
 
 export default function Training() {
@@ -28,7 +28,7 @@ export default function Training() {
       description: 'Maximální vzdálenost drivu',
       difficulty: 'Pokročilý',
       duration: '20 min',
-      icon: TrendingUp,
+      icon: Repeat,
     },
     {
       id: 'speed',

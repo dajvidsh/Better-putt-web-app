@@ -101,19 +101,11 @@ export default function Survival() {
           {/* Skóre */}
           <div className="flex-1 border border-gray-200 bg-gray-50 rounded-lg py-6 text-center flex flex-col items-center justify-center">
               <p className="text-5xl font-light mb-1">{lives}</p>
-              <p className="text-xs text-gray-400">Životů</p>
+              <p className="text-xs text-gray-400">
+                { lives === 1 ? "Život" : lives <= 4 ? "Životy" : "Životů" }
+              </p>
             </div>
           </div>
-
-          {/* Progress Bar */}
-          {/*<div className="w-full max-w-xs">*/}
-          {/*  <div className="h-1 bg-gray-100 rounded-full overflow-hidden">*/}
-          {/*    <div*/}
-          {/*      className="h-full bg-black transition-all duration-300"*/}
-          {/*      style={{ width: `${(round) * 100}%` }}*/}
-          {/*    />*/}
-          {/*  </div>*/}
-          {/*</div>*/}
         </div>
 
         {/* Controls */}
@@ -122,25 +114,25 @@ export default function Survival() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => handleFinish()}
-                  className="text-2xl py-5 border text-red-500 border-red-100 bg-red-50/30 active:bg-red-50"
+                  className="text-2xl py-5 border text-red-500 border-red-500 bg-red-50/30 active:bg-red-50"
                 >
                   0
                 </button>
                 <button
                   onClick={() => handleSuccess(1)}
-                  className="flex items-center justify-center text-2xl py-5 border text-orange-400 border-orange-100 bg-orange-50/30 active:bg-orange-50"
+                  className="flex items-center justify-center text-2xl py-5 border text-orange-400 border-orange-500 bg-orange-50/30 active:bg-orange-50"
                 >
                   { lives === 1 && round !== 1 ? <AlertTriangle className="size-8" strokeWidth={1.5} /> : "1" }
                 </button>
                   <button
                   onClick={() => handleSuccess(2)}
-                  className="text-2xl py-5 border text-gray-400 border-gray-100 bg-gray-50/30 active:bg-gray-50"
+                  className="text-2xl py-5 border text-gray-400 border-gray-500 bg-gray-50/30 active:bg-gray-50"
                 >
                   2
                 </button>
                   <button
                   onClick={() => handleSuccess(3)}
-                  className="flex items-center justify-center text-2xl py-5 border text-lime-500 border-lime-100 bg-lime-50/30 active:bg-lime-50"
+                  className="flex items-center justify-center text-2xl py-5 border text-lime-500 border-lime-500 bg-lime-50/30 active:bg-lime-50"
                 >
                   { !beenHere && round !== 1 ? <Zap className="size-8" strokeWidth={1.5} /> : "3" }
                 </button>
@@ -150,7 +142,7 @@ export default function Survival() {
               <button
               onClick={handleBack}
               disabled={history.length === 0}
-              className={`w-full py-4 border border-gray-200 flex items-center justify-center gap-2 transition-colors ${
+              className={`w-full py-4 border border-gray-400 flex items-center justify-center gap-2 transition-colors ${
                 history.length === 0 
                   ? 'opacity-40 cursor-not-allowed bg-gray-50' 
                   : 'active:bg-gray-50'

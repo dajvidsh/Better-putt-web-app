@@ -8,36 +8,25 @@ export default function Jyly() {
   // const [time, setTime] = useState(0);
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState(false);
+  const [pace, setPace] = useState(0);
   // const amountOfPutts = useState(0);
   const [distance, setDistance] = useState(10);
   const [round, setRound] = useState(1);
   const maxRounds = 20;
-  const [history, setHistory] = useState<{score: number, distance: number}[]>([]);
+  const [history, setHistory] = useState<{score: number, distance: number, pace: number}[]>([]);
 
-  // useEffect(() => {
-  //   let interval: number | undefined;
-  //   if (isRunning) {
-  //     interval = window.setInterval(() => {
-  //       setTime((prevTime) => prevTime + 1);
-  //     }, 1000);
-  //   }
-  //   return () => {
-  //     if (interval) clearInterval(interval);
-  //   };
-  // }, [isRunning]);
+  function handleSuccess(amountOfPutts: number) {
+    const pointsGained = distance * amountOfPutts;
+    const newScore = score + pointsGained;
 
-  // const formatTime = (seconds: number) => {
-  //   const mins = Math.floor(seconds / 60);
-  //   const secs = seconds % 60;
-  //   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  // };
+    setHistory(prev => [...prev, { score, distance, pace }]);
 
-  function handleSuccess(amountOfPutts: number){
+    setScore(newScore);
+    setDistance(5 + amountOfPutts);
 
-      setHistory(prev => [...prev, { score, distance }]);
+    const currentPace = Math.round((newScore / round) * maxRounds);
+    setPace(currentPace);
 
-    setScore(score + distance*amountOfPutts);
-    setDistance(5+amountOfPutts)
     if (round < maxRounds) {
       setRound(round + 1);
     } else {
@@ -53,25 +42,20 @@ export default function Jyly() {
     setScore(previousState.score);
     setDistance(previousState.distance);
     setRound(prev => prev-1)
+    setPace(previousState.pace)
 
     setHistory(prev => prev.slice(0, -1));
   };
 
   const handleFinish = () => {
-    // setIsRunning(false);
-    // Navigate to results or back
     setPhase(true)
-    // setTimeout(() => {
-    //   navigate(-1);
-    // }, 1000);
   };
 
   const handleReset = () => {
-    // setIsRunning(false);
-    // setTime(0);
     setScore(0);
     setDistance(10);
     setRound(1);
+    setPace(0);
     setHistory([]);
   };
 
@@ -79,24 +63,21 @@ export default function Jyly() {
 
   return (
     <div className="size-full bg-white overflow-auto flex flex-col pb-20">
-      {/* Header */}
-      {/*<div className="bg-white border-b border-gray-100">*/}
-      {/*  <div className="flex items-center gap-4 px-6 py-4">*/}
-      {/*    <button onClick={() => navigate(-1)} className="p-2 -ml-2 active:opacity-50 transition-opacity">*/}
-      {/*      <ArrowLeft className="size-5" />*/}
-      {/*    </button>*/}
-      {/*    <h1 className="text-sm font-normal tracking-wide">TRÉNINK</h1>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
 
       { !phase && (
 
       <div className="flex-1 flex flex-col px-6">
         {/* Game Info */}
-        <div className="text-center py-4">
-          <h2 className="text-xl font-light mb-2">{gameName}</h2>
-          <p className="text-gray-500">Kolo {round} z {maxRounds}</p>
+        <div className="text-center py-4 flex flex-col items-center">
+        <h2 className="text-xl font-light mb-1">{gameName}</h2>
+        <p className="text-gray-500 mb-3">Kolo {round} z {maxRounds}</p>
+
+        {/* Pace badge */}
+        <div className="inline-flex items-center gap-2 border border-gray-200 bg-gray-50 rounded-lg px-4 py-1.5">
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest">Tempo</span>
+          <span className="text-sm font-medium text-black">{pace}</span>
         </div>
+      </div>
 
         {/* Vzdalenost */}
         <div className="flex-1 flex flex-col items-center justify-center py-0 pb-10">
@@ -132,37 +113,37 @@ export default function Jyly() {
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => handleSuccess(0)}
-                  className="text-2xl py-5 border text-red-500 border-red-100 bg-red-50/30 active:bg-red-50"
+                  className="text-2xl py-5 border text-red-500 border-red-500 bg-red-50/30 active:bg-red-50"
                 >
                   0
                 </button>
                 <button
                   onClick={() => handleSuccess(1)}
-                  className="text-2xl py-5 border text-orange-400 border-orange-100 bg-orange-50/30 active:bg-orange-50"
+                  className="text-2xl py-5 border text-orange-400 border-orange-500 bg-orange-50/30 active:bg-orange-50"
                 >
                   1
                 </button>
                   <button
                   onClick={() => handleSuccess(2)}
-                  className="text-2xl py-5 border text-orange-400 border-orange-100 bg-orange-50/30 active:bg-orange-50"
+                  className="text-2xl py-5 border text-orange-400 border-orange-500 bg-orange-50/30 active:bg-orange-50"
                 >
                   2
                 </button>
                   <button
                   onClick={() => handleSuccess(3)}
-                  className="text-2xl py-5 border text-lime-500 border-lime-100 bg-lime-50/30 active:bg-lime-50"
+                  className="text-2xl py-5 border text-lime-500 border-lime-500 bg-lime-50/30 active:bg-lime-50"
                 >
                   3
                 </button>
                   <button
                   onClick={() => handleSuccess(4)}
-                  className="text-2xl py-5 border text-lime-500 border-lime-100 bg-lime-50/30 active:bg-lime-50"
+                  className="text-2xl py-5 border text-lime-500 border-lime-500 bg-lime-50/30 active:bg-lime-50"
                 >
                   4
                 </button>
                   <button
                   onClick={() => handleSuccess(5)}
-                  className="text-2xl py-5 border text-emerald-500 border-emerald-100 bg-emerald-50/30 active:bg-emerald-50"
+                  className="text-2xl py-5 border text-emerald-500 border-emerald-500 bg-emerald-50/30 active:bg-emerald-50"
                 >
                   5
                 </button>
@@ -172,7 +153,7 @@ export default function Jyly() {
               <button
               onClick={handleBack}
               disabled={history.length === 0}
-              className={`w-full py-4 border border-gray-200 flex items-center justify-center gap-2 transition-colors ${
+              className={`w-full py-4 border border-gray-400 flex items-center justify-center gap-2 transition-colors ${
                 history.length === 0 
                   ? 'opacity-40 cursor-not-allowed bg-gray-50' 
                   : 'active:bg-gray-50'

@@ -5,13 +5,12 @@ import { ArrowLeft, Target, Settings2, Check } from 'lucide-react';
 export default function Drill() {
   const navigate = useNavigate();
 
-  // FÁZE HRY: 'setup' (nastavení) | 'playing' (samotný trénink) | 'finished'
   const [phase, setPhase] = useState<'setup' | 'playing' | 'finished'>('setup');
 
   // NASTAVENÍ TRÉNINKU
   const [distance, setDistance] = useState(7);
-  const [discsCount, setDiscsCount] = useState(5); // Kolik disků má hráč v ruce
-  const [targetPutts, setTargetPutts] = useState(100); // Cílový počet hodů
+  const [discsCount, setDiscsCount] = useState(5);
+  const [targetPutts, setTargetPutts] = useState(100);
 
   // STAV BĚHEM HRY
   const [makes, setMakes] = useState(0);
@@ -23,11 +22,8 @@ export default function Drill() {
   const remainingPutts = targetPutts - attempts;
   const isLastRound = remainingPutts <= discsCount;
   const currentThrowCount = isLastRound ? remainingPutts : discsCount;
-
-  // AKCE: Spuštění hry
   const startDrill = () => setPhase('playing');
 
-  // AKCE: Zadání skóre po odhození jedné série (např. 5 disků)
   const handleSuccess = (madeAmount: number) => {
     setHistory(prev => [...prev, { makes, attempts }]);
     setMakes(prev => prev + madeAmount);
@@ -119,7 +115,7 @@ export default function Drill() {
 
           <button
             onClick={startDrill}
-            className="flex justify-center gap-2 mt-8 w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity"
+            className="flex justify-center gap-2 w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity"
           >
             <Target className="size-5" />
             Začít Drill
@@ -161,9 +157,9 @@ export default function Drill() {
 
             {/* Progress Bar */}
             <div className="w-full max-w-xs mt-auto">
-              <div className="flex justify-between text-xs text-gray-400 mb-2">
-                <span>{Math.round((attempts / targetPutts) * 100)}%</span>
-              </div>
+              {/*<div className="flex justify-between text-xs text-gray-400 mb-2">*/}
+              {/*  <span>{Math.round((attempts / targetPutts) * 100)}%</span>*/}
+              {/*</div>*/}
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-black transition-all duration-300"
@@ -182,7 +178,7 @@ export default function Drill() {
                 <button
                   key={num}
                   onClick={() => handleSuccess(num)}
-                  className="py-4 border border-gray-200 rounded-lg flex items-center justify-center text-xl font-light active:bg-gray-100 transition-colors bg-gray-50"
+                  className="text-2xl py-5 border text-gray-400 border-gray-500 bg-gray-50/30 active:bg-gray-50"
                 >
                   {num}
                 </button>
@@ -193,7 +189,7 @@ export default function Drill() {
               <button
                 onClick={handleBack}
                 disabled={history.length === 0}
-                className={`flex-1 py-4 border border-gray-200 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+                className={`w-full py-4 border border-gray-400 flex items-center justify-center gap-2 transition-colors ${
                   history.length === 0 ? 'opacity-40 cursor-not-allowed bg-white' : 'active:bg-gray-50 bg-gray-50'
                 }`}
               >
@@ -202,7 +198,8 @@ export default function Drill() {
 
               <button
                 onClick={handleReset}
-                className="w-16 py-4 text-gray-400 flex items-center justify-center border border-gray-100 rounded-lg active:bg-gray-50 transition-colors"
+                // className="w-16 py-4 text-gray-400 flex items-center justify-center border border-gray-100 rounded-lg active:bg-gray-50 transition-colors"
+                className={`w-16 py-4 border border-gray-400 flex items-center justify-center gap-2 transition-colors`}
               >
                 <Settings2 className="size-5" />
               </button>

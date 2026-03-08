@@ -1,6 +1,6 @@
 import './App.css'
 // import React from "react";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, useLocation} from 'react-router-dom';
 import Header from "./components/Header.tsx";
 import Hero from "./components/Hero.tsx";
 import BottomNav from "./components/BottomNav.tsx";
@@ -17,7 +17,7 @@ import Register from "./pages/Register.tsx";
 import Jyly from "./pages/Jyly.tsx";
 import Survival from "./pages/Survival.tsx";
 import Drill from "./pages/Drill.tsx";
-// import Editprofile from "./pages/Editprofile.tsx";
+import {useEffect} from "react";
 
 const Home = () => (
   <>
@@ -25,10 +25,19 @@ const Home = () => (
   </>
 );
 
+const ScrollUp = () => {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+}
+
 function App() {
 
     return (
         <Router>
+            <ScrollUp />
             <Header />
             <Routes>
                 <Route path="/" element={<Home />} />
