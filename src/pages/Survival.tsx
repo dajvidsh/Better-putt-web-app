@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import {AlertTriangle, RotateCcw, Zap} from 'lucide-react';
+import {AlertTriangle, Check, RotateCcw, Zap} from 'lucide-react';
 import { useState } from 'react';
 
 export default function Survival() {
@@ -8,15 +8,17 @@ export default function Survival() {
   // const [time, setTime] = useState(0);
   const [lives, setLives] = useState(1);
   const [beenHere, setBeenHere] = useState(false);
-  // const amountOfPutts = useState(0);
+  const [phase, setPhase] = useState(false);
+  const [sumOfPutts, setSumOfPutts] = useState(0);
   const [distance, setDistance] = useState(3);
   const [round, setRound] = useState(1);
   // const maxRounds = 20;
-  const [history, setHistory] = useState<{lives: number, distance: number, beenHere: boolean}[]>([]);
+  const [history, setHistory] = useState<{lives: number, distance: number, beenHere: boolean, sumOfPutts: number}[]>([]);
 
   function handleSuccess(amountOfPutts: number){
 
-    setHistory(prev => [...prev, { lives, distance, beenHere }]);
+    setHistory(prev => [...prev, { lives, distance, beenHere, sumOfPutts }]);
+    setSumOfPutts(prev => prev+amountOfPutts)
 
     if(amountOfPutts === 1) {
       if(lives-1 === 0) handleFinish()
@@ -46,6 +48,7 @@ export default function Survival() {
     setDistance(previousState.distance);
     setRound(prev => prev-1)
     setBeenHere(previousState.beenHere)
+    setSumOfPutts(previousState.sumOfPutts)
 
     setHistory(prev => prev.slice(0, -1));
   };
@@ -53,9 +56,10 @@ export default function Survival() {
   const handleFinish = () => {
     // setIsRunning(false);
     // Navigate to results or back
-    setTimeout(() => {
-      navigate('/training/survival');
-    }, 1000);
+    setPhase(true)
+    // setTimeout(() => {
+    //   navigate('/training/survival');
+    // }, 1000);
   };
 
   const handleReset = () => {
@@ -65,12 +69,16 @@ export default function Survival() {
     setDistance(3);
     setRound(1);
     setHistory([]);
+    setSumOfPutts(0)
   };
 
   const gameName = 'Survival';
 
   return (
     <div className="size-full bg-white overflow-auto flex flex-col pb-20">
+
+      { !phase && (
+
 
       <div className="flex-1 flex flex-col px-6">
         {/* Game Info */}
@@ -162,6 +170,30 @@ export default function Survival() {
 
         </div>
       </div>
+      )}
+      {/* --- FÁZE 3: HOTOVO --- */}
+      {phase && (
+            <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pt-10">
+              <div className="size-15 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                <Check className="size-10" />
+              </div>
+              <h2 className="text-3xl font-light mb-2">Survival Dokončen</h2>
+              <p className="text-gray-500 mb-1">Odházeno {round*3} puttů.</p>
+              <p className="text-gray-500 mb-12">Úspěšnost {Math.round((sumOfPutts/(round*3))*100)}%.</p>
+
+              <div className="border border-gray-200 bg-gray-50 rounded-lg py-8 px-12 text-center w-full max-w-sm mb-12">
+                <p className="text-5xl font-light mb-2">{distance}<span className="text-3xl text-gray-400">m</span></p>
+                <p className="text-sm text-gray-400 uppercase tracking-widest">Konečná vzdálenost</p>
+              </div>
+
+              <button
+                onClick={() => navigate('/training')}
+                className="flex justify-center gap-2 mt-8 w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity"
+              >
+                Zpět na tréninky
+              </button>
+            </div>
+          )}
     </div>
   );
 }

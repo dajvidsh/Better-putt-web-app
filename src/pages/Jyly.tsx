@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { RotateCcw } from 'lucide-react';
+import {Check, RotateCcw} from 'lucide-react';
 import { useState } from 'react';
 
 export default function Jyly() {
@@ -7,6 +7,7 @@ export default function Jyly() {
   // const [isRunning, setIsRunning] = useState(false);
   // const [time, setTime] = useState(0);
   const [score, setScore] = useState(0);
+  const [phase, setPhase] = useState(false);
   // const amountOfPutts = useState(0);
   const [distance, setDistance] = useState(10);
   const [round, setRound] = useState(1);
@@ -59,9 +60,10 @@ export default function Jyly() {
   const handleFinish = () => {
     // setIsRunning(false);
     // Navigate to results or back
-    setTimeout(() => {
-      navigate(-1);
-    }, 1000);
+    setPhase(true)
+    // setTimeout(() => {
+    //   navigate(-1);
+    // }, 1000);
   };
 
   const handleReset = () => {
@@ -86,6 +88,8 @@ export default function Jyly() {
       {/*    <h1 className="text-sm font-normal tracking-wide">TRÉNINK</h1>*/}
       {/*  </div>*/}
       {/*</div>*/}
+
+      { !phase && (
 
       <div className="flex-1 flex flex-col px-6">
         {/* Game Info */}
@@ -125,8 +129,6 @@ export default function Jyly() {
 
         {/* Controls */}
         <div className="pb-8 space-y-3">
-          {round <= maxRounds ? (
-            <>
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => handleSuccess(0)}
@@ -186,13 +188,34 @@ export default function Jyly() {
                 <RotateCcw className="size-4" />
                 Reset
               </button>
-              </>
-            ) : (
-                  <div>lksdjf</div>
-              )}
-
         </div>
       </div>
+      )}
+      {/* --- FÁZE 3: HOTOVO --- */}
+          {phase && (
+            <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pt-10">
+              <div className="size-15 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                <Check className="size-10" />
+              </div>
+              <h2 className="text-3xl font-light mb-2">JYLY Dokončeno</h2>
+              <p className="text-gray-500 mb-2">Odházeno 100 puttů.</p>
+              <p className="text-gray-500 mb-12">Úspěšnost {Math.round((score/(100))*10)}%.</p>
+
+              <div className="border border-gray-200 bg-gray-50 rounded-lg py-8 px-12 text-center w-full max-w-sm mb-12">
+                <p className="text-5xl font-light mb-2">{score}</p>
+                <p className="text-sm text-gray-400 uppercase tracking-widest">Konečné skóre</p>
+              </div>
+
+
+
+              <button
+                onClick={() => navigate('/training')}
+                className="flex justify-center gap-2 mt-8 w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity"
+              >
+                Zpět na tréninky
+              </button>
+            </div>
+          )}
     </div>
   );
 }
