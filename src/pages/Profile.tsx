@@ -14,10 +14,9 @@ export default function Profile() {
     }];
 
     const menuItems = [
-        { label: 'Upravit profil', value: '', path: '' },
-        { label: 'Statistiky', value: '', path: '/statistics' },
+        { label: 'Upravit profil', value: '', path: '/editprofile' },
+        { label: 'Moje statistiky', value: '', path: '/statistics' },
         { label: 'Historie tréninků', value: '', path: '/history' },
-        { label: 'Sociální', value: '', path: '/social' },
         { label: 'Nastavení', value: '', path: '/settings' },
       ];
 
@@ -58,11 +57,11 @@ export default function Profile() {
                     </div>
                     <div className={`flex-1 border rounded-lg p-4 text-center border-gray-200 bg-gray-50`}>
                         <TrendingUp className="size-6 mx-auto mb-2" strokeWidth={1.5} />
-                        <p className="text-xs text-gray-600">Zlepšení</p>
+                        <p className="text-xs text-gray-600">1000 puttů</p>
                     </div>
                     <div className={`flex-1 border rounded-lg p-4 text-center border-gray-100 opacity-40`}>
                         <Award className="size-6 mx-auto mb-2" strokeWidth={1.5} />
-                        <p className="text-xs text-gray-600">Top 10</p>
+                        <p className="text-xs text-gray-600">Top 3</p>
                     </div>
                 </div>
             </div>
@@ -83,7 +82,7 @@ export default function Profile() {
 
             {/* Logout */}
             <button
-                // onClick={handleLogout}
+                onClick={() => navigate('/login')}
                 className="w-full flex items-center justify-center gap-2 py-4 mt-8 text-red-500 active:opacity-50 transition-opacity"
                 >
                 <LogOut className="size-5" />

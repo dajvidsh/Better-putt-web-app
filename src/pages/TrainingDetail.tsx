@@ -1,14 +1,16 @@
-import { useParams, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, Play, BarChart3 } from 'lucide-react';
+import {useParams} from "react-router-dom";
 // import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 
 export default function GameDetail() {
+  // const gameId = ['jyly', 'accuracy', 'distance', 'speed']
   const { gameId } = useParams();
   const navigate = useNavigate();
 
   const gameData: Record<string, any> = {
-    putting: {
-      name: 'Putting Challenge',
+    jyly: {
+      name: 'JYLY',
       description: 'Vylepšete své krátké hody. Cílem je trefit koš z různých pozic a vzdáleností.',
       rules: [
         'Postavte se na značku 3m, 5m, 7m a 10m od koše',
@@ -20,8 +22,8 @@ export default function GameDetail() {
       avgScore: '38/50',
       attempts: 12,
     },
-    accuracy: {
-      name: 'Accuracy Test',
+    survival: {
+      name: 'Survival',
       description: 'Test přesnosti na různé vzdálenosti s různými disky.',
       rules: [
         'Vyberte 5 cílů ve vzdálenostech 10-30m',
@@ -33,8 +35,8 @@ export default function GameDetail() {
       avgScore: '35/50',
       attempts: 8,
     },
-    distance: {
-      name: 'Distance Drive',
+    drill: {
+      name: 'Drill',
       description: 'Změřte maximální vzdálenost vašeho drivu.',
       rules: [
         'Proveďte 10 pokusů na maximum',
@@ -61,7 +63,7 @@ export default function GameDetail() {
     },
   };
 
-  const game = gameData[gameId || ''] || gameData.putting;
+  const game = gameData[gameId || ''] || gameData.jyly;
 
   return (
     <div className="size-full bg-white overflow-auto">
@@ -76,17 +78,8 @@ export default function GameDetail() {
       </div>
 
       <div className="px-6 pb-24">
-        {/* Image */}
-        <div className="relative h-48 rounded-lg overflow-hidden my-6">
-          {/*<ImageWithFallback*/}
-          {/*  src="https://images.unsplash.com/photo-1593890849134-5e6ff4c496de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvdXRkb29yJTIwZm9yZXN0JTIwbmF0dXJlJTIwcGF0aHxlbnwxfHx8fDE3NzI4ODg0MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"*/}
-          {/*  alt={game.name}*/}
-          {/*  className="w-full h-full object-cover"*/}
-          {/*/>*/}
-        </div>
-
         {/* Game Info */}
-        <div className="mb-8">
+        <div className="mb-8 pt-5">
           <h2 className="text-2xl font-light mb-3">{game.name}</h2>
           <p className="text-gray-600 leading-relaxed">{game.description}</p>
         </div>
@@ -123,7 +116,7 @@ export default function GameDetail() {
         {/* Actions */}
         <div className="space-y-3">
           <button
-            onClick={() => navigate(`/training/${gameId}/play`)}
+            onClick={() => navigate(`/${gameId}`)}
             className="w-full bg-black text-white py-4 flex items-center justify-center gap-2 active:opacity-70 transition-opacity"
           >
             <Play className="size-5 fill-white" />

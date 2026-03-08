@@ -6,7 +6,7 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white border-b border-slate-100 top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between px-6 py-4">
         {/*<button onClick={() => setIsOpen(!isOpen)} className="p-2 -ml-2 active:opacity-50 transition-opacity">*/}
         {/*  <Menu className="size-5" />*/}

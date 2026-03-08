@@ -1,4 +1,4 @@
-import {ChevronRight, Crosshair, Target, TrendingUp, Zap} from "lucide-react";
+import {ChevronRight, Flame, Target, TrendingUp, Zap} from "lucide-react";
 import {useNavigate} from "react-router";
 
 export default function Training() {
@@ -7,24 +7,24 @@ export default function Training() {
 
     const trainingGames = [
     {
-      id: 'putting',
-      name: 'Putting Challenge',
+      id: 'jyly',
+      name: 'JYLY',
       description: 'Trénink krátkých hodů do koše',
       difficulty: 'Začátečník',
-      duration: '15 min',
+      duration: '15-25 min',
       icon: Target,
     },
     {
-      id: 'accuracy',
-      name: 'Accuracy Test',
+      id: 'survival',
+      name: 'Survival',
       description: 'Test přesnosti na různé vzdálenosti',
       difficulty: 'Středně pokročilý',
-      duration: '25 min',
-      icon: Crosshair,
+      duration: '5-? min',
+      icon: Flame,
     },
     {
-      id: 'distance',
-      name: 'Distance Drive',
+      id: 'drill',
+      name: 'Drill',
       description: 'Maximální vzdálenost drivu',
       difficulty: 'Pokročilý',
       duration: '20 min',
@@ -41,10 +41,10 @@ export default function Training() {
   ];
 
     return (
-        <div className="px-6">
+        <div className="px-6 pb-20">
           <div className="py-8">
             <h1 className="text-2xl font-light mb-2">Tréninkové hry</h1>
-            <p className="text-gray-500">Vyberte si trénink</p>
+            <p className="text-gray-500">Vyber si trénink</p>
           </div>
 
           <div className="space-y-3 pb-6">
@@ -70,7 +70,7 @@ export default function Training() {
                   </div>
                 </div>
 
-                <ChevronRight className="size-5 text-gray-400 flex-shrink-0 mt-2" />
+                <ChevronRight className="size-5 text-gray-400 shrink-0 mt-2" />
               </div>
             </button>
           );

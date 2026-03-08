@@ -2,8 +2,11 @@
 
 import {BarChart3, Clock, Target, TrendingUp, Users, History} from "lucide-react";
 import {Link} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 export default function Hero() {
+
+    const navigate = useNavigate();
 
     const stats = [24, 12, 23];
     const recentGames = [
@@ -16,7 +19,7 @@ export default function Hero() {
         <div className="px-6 pb-6 pb-20">
             {/* Hero */}
             <div className="py-8">
-                <h1 className="text-2xl font-light mb-2">Vítejte zpět</h1>
+                <h1 className="text-2xl font-light mb-2">Vítej zpět</h1>
                 <p className="text-gray-500">Pokračuj v tréninku</p>
              </div>
 
@@ -33,8 +36,8 @@ export default function Hero() {
                     </div>
                     <div className="border border-gray-100 rounded-lg p-4 text-center">
                         <TrendingUp className="size-5 mx-auto mb-2 text-gray-400" strokeWidth={1.5} />
-                        <p className="text-lg font-light mb-1">{stats[2]}%</p>
-                        <p className="text-xs text-gray-400">Zlepšení</p>
+                        <p className="text-lg font-light mb-1">{stats[2]}</p>
+                        <p className="text-xs text-gray-400">puttů</p>
                     </div>
             </div>
 
@@ -56,7 +59,7 @@ export default function Hero() {
             <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">Poslední aktivity</h2>
-              <button className="text-sm text-black">Vše</button>
+              <button onClick={() => navigate(`/history`)} className="text-sm text-black">Vše</button>
             </div>
 
             <div className="space-y-1">
@@ -75,7 +78,7 @@ export default function Hero() {
                 </button>
               ))}
             </div>
-            <button className="w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity">
+            <button onClick={() => navigate(`/training`)} className="w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity">
                 Začít trénink
             </button>
           </div>
