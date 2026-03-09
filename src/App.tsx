@@ -20,43 +20,60 @@ import Drill from "./pages/Drill.tsx";
 import {useEffect} from "react";
 
 const Home = () => (
-  <>
-    <Hero />
-  </>
+    <>
+        <Hero/>
+    </>
 );
 
 const ScrollUp = () => {
-    const { pathname } = useLocation();
+    const {pathname} = useLocation();
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [pathname]);
     return null;
 }
 
+const LayoutWrapper = ({children}: { children: React.ReactNode }) => {
+    const location = useLocation();
+
+    const gamePaths = ['/jyly', '/survival', '/drill'];
+    const isGamePage = gamePaths.includes(location.pathname);
+
+    return (
+        <>
+            {/* Zobraz Header pouze pokud nejsme ve hře */}
+            {!isGamePage && <Header/>}
+
+            {children}
+        </>
+    );
+};
+
 function App() {
 
     return (
         <Router>
-            <ScrollUp />
-            <Header />
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/training" element={<Training />} />
-                <Route path="/training/:gameId" element={<TrainingDetail />} />
-                <Route path="/leaderboard" element={<LeaderBoard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/history" element={<History />} />
-                <Route path="/editprofile" element={<Editprofile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/jyly" element={<Jyly />} />
-                <Route path="/survival" element={<Survival/>} />
-                <Route path="/drill" element={<Drill/>} />
-            </Routes>
+            <ScrollUp/>
+            <LayoutWrapper>
+                <Routes>
+                    <Route path="/" element={<Home/>}/>
+                    <Route path="/training" element={<Training/>}/>
+                    <Route path="/training/:gameId" element={<TrainingDetail/>}/>
+                    <Route path="/leaderboard" element={<LeaderBoard/>}/>
+                    <Route path="/profile" element={<Profile/>}/>
+                    <Route path="/statistics" element={<Statistics/>}/>
+                    <Route path="/history" element={<History/>}/>
+                    <Route path="/editprofile" element={<Editprofile/>}/>
+                    <Route path="/settings" element={<Settings/>}/>
+                    <Route path="/login" element={<Login/>}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/jyly" element={<Jyly/>}/>
+                    <Route path="/survival" element={<Survival/>}/>
+                    <Route path="/drill" element={<Drill/>}/>
+                </Routes>
+            </LayoutWrapper>
 
-            <BottomNav />
+            <BottomNav/>
 
         </Router>
     )

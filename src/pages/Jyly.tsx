@@ -101,7 +101,7 @@ export default function Jyly() {
   const gameName = 'JYLY';
 
   return (
-    <div className="size-full bg-white overflow-auto flex flex-col pb-20">
+    <div className="size-full bg-white overflow-auto flex flex-col pt-10 pb-20">
 
       { !phase && (
 

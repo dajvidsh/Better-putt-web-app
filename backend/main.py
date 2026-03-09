@@ -21,9 +21,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def read_root():
     return {"message": "Vítej v Better Putt API!"}
+
 
 # Nový testovací endpoint, který ověří, že databáze funguje
 @app.get("/api/db-test")
@@ -68,6 +70,7 @@ def seed_database(db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Databáze byla úspěšně naplněna startovacími daty!"}
+
 
 @app.post("/api/trainings/save", response_model=schemas.GameSessionResponse)
 def save_training(session_data: schemas.GameSessionCreate, db: Session = Depends(get_db)):
@@ -147,7 +150,7 @@ def get_user_statistics(db: Session = Depends(get_db)):
         if session.total_score > stats["bestScore"]:
             stats["bestScore"] = session.total_score
 
-            # Nejlepší procentuální úspěšnost v jedné hře (pro Drill)
+        # Nejlepší procentuální úspěšnost v jedné hře (pro Drill)
         if session.total_attempts > 0:
             pct = round((session.total_makes / session.total_attempts) * 100)
             if pct > stats["best_percentage"]:
@@ -157,7 +160,8 @@ def get_user_statistics(db: Session = Depends(get_db)):
     formatted_game_stats = []
     for mode, stats in game_stats_dict.items():
         if mode == "drill":
-            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats["total_attempts_sum"] > 0 else 0
+            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats[
+                                                                                               "total_attempts_sum"] > 0 else 0
             best = stats["best_percentage"]
             # Jinak posíláme normální body (JYLY, Survival)
         else:
@@ -182,3 +186,47 @@ def get_user_statistics(db: Session = Depends(get_db)):
         },
         "gameStats": formatted_game_stats
     }
+
+
+@app.get('/api/games')
+def get_games(db: Session = Depends(get_db)):
+    user_id = 1
+
+    sessions = db.query(models.GameSession).filter(models.GameSession.user_id == user_id).order_by(
+        models.GameSession.completed_at.desc()).all()
+    games_dict = []
+
+    for session in sessions:
+        if session.game_mode_id == 'drill':
+            pct = round((session.total_makes / session.total_attempts) * 100) if session.total_attempts > 0 else 0
+        else:
+            pct = session.total_score
+
+        games_dict.append({
+            "id": session.id,
+            "game_mode_id": session.game_mode_id,
+            "game_name": session.game_mode_id.upper(),
+            "total_score": pct,
+            "total_makes": session.total_makes,
+            "total_attempts": session.total_attempts,
+            "date": session.completed_at.strftime("%d.%m.%Y") if session.completed_at else "Neznámé datum"
+        })
+
+    return games_dict
+
+
+@app.get('/api/game-modes')
+def get_games(db: Session = Depends(get_db)):
+
+    sessions = db.query(models.GameMode).order_by(models.GameMode.id).all()
+    game_modes_dict = []
+
+    for session in sessions:
+
+        game_modes_dict.append({
+            "id": session.id,
+            "name": session.name,
+            "description": session.description,
+        })
+
+    return game_modes_dict
