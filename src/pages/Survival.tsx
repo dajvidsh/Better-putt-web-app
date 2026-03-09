@@ -4,8 +4,6 @@ import { useState } from 'react';
 
 export default function Survival() {
   const navigate = useNavigate();
-  // const [isRunning, setIsRunning] = useState(false);
-  // const [time, setTime] = useState(0);
   const [lives, setLives] = useState(1);
   const [beenHere, setBeenHere] = useState(false);
   const [phase, setPhase] = useState(false);
@@ -13,53 +11,61 @@ export default function Survival() {
   const [distance, setDistance] = useState(3);
   const [round, setRound] = useState(1);
   // const maxRounds = 20;
-  const [history, setHistory] = useState<{lives: number, distance: number, beenHere: boolean, sumOfPutts: number}[]>([]);
+  const [history, setHistory] = useState<{lives: number, distance: number, beenHere: boolean, sumOfPutts: number, makes: number}[]>([]);
 
-  function handleSuccess(amountOfPutts: number){
+  function handleSuccess(amountOfPutts: number) {
+    const updatedHistory = [...history, { lives, distance, beenHere, sumOfPutts, makes: amountOfPutts }];
+    setHistory(updatedHistory);
 
-    setHistory(prev => [...prev, { lives, distance, beenHere, sumOfPutts }]);
-    setSumOfPutts(prev => prev+amountOfPutts)
+    const newSum = sumOfPutts + amountOfPutts;
+    setSumOfPutts(newSum);
 
-    if(amountOfPutts === 1) {
-      if(lives-1 === 0) handleFinish()
-      setLives(prev => prev-1)
-      setBeenHere(true)
+    let newLives = lives;
+    let newDistance = distance;
+    let newBeenHere = beenHere;
+    let isGameOver = false;
 
-    } else if(amountOfPutts === 3) {
-      if(!beenHere) setLives(lives + 1)
-
-      setDistance(prev => prev+1)
-      setBeenHere(false)
-
+    if (amountOfPutts === 0) {
+      isGameOver = true;
+    } else if (amountOfPutts === 1) {
+      newLives -= 1;
+      newBeenHere = true;
+      if (newLives === 0) isGameOver = true;
+    } else if (amountOfPutts === 3) {
+      if (!beenHere) newLives += 1;
+      newDistance += 1;
+      newBeenHere = false;
     } else {
-      setBeenHere(true)
+      newBeenHere = true;
     }
 
-    setRound(prev => prev+1)
+    setLives(newLives);
+    setDistance(newDistance);
+    setBeenHere(newBeenHere);
+    setRound(prev => prev + 1);
 
+    // 4. Pokud je konec, zavoláme finish a pošleme tam aktuální data pro DB
+    if (isGameOver) {
+      handleFinish(updatedHistory, distance, newSum);
+    }
   }
 
   const handleBack = () => {
-    if(history.length === 0) return;
-
-    const previousState = history[history.length-1];
+    if (history.length === 0) return;
+    const previousState = history[history.length - 1];
 
     setLives(previousState.lives);
     setDistance(previousState.distance);
-    setRound(prev => prev-1)
-    setBeenHere(previousState.beenHere)
-    setSumOfPutts(previousState.sumOfPutts)
+    setRound(prev => prev - 1);
+    setBeenHere(previousState.beenHere);
+    setSumOfPutts(previousState.sumOfPutts);
 
     setHistory(prev => prev.slice(0, -1));
   };
 
-  const handleFinish = () => {
-    // setIsRunning(false);
-    // Navigate to results or back
-    setPhase(true)
-    // setTimeout(() => {
-    //   navigate('/training/survival');
-    // }, 1000);
+  const handleFinish = (finalHistory: typeof history, finalDistance: number, finalSum: number) => {
+    setPhase(true);
+    saveGameToDb(finalHistory, finalDistance, finalSum);
   };
 
   const handleReset = () => {
@@ -70,6 +76,40 @@ export default function Survival() {
     setRound(1);
     setHistory([]);
     setSumOfPutts(0)
+  };
+
+  const saveGameToDb = async (finalHistory: typeof history, finalDistance: number, finalSum: number) => {
+    const totalAttempts = finalHistory.length * 3; // Každé kolo máš 3 disky
+
+    const trainingData = {
+      game_mode_id: "survival",
+      total_score: finalDistance, // Skóre v Survivalu = nejvyšší dosažená vzdálenost
+      total_makes: finalSum,
+      total_attempts: totalAttempts,
+      rounds: finalHistory.map((h, index) => ({
+        round_number: index + 1,
+        distance: h.distance,
+        attempts: 3,
+        makes: h.makes,
+        score_earned: h.makes
+      }))
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/trainings/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trainingData)
+      });
+
+      if (response.ok) {
+        console.log("Paráda! Survival uložen.");
+      } else {
+        console.error("Chyba při ukládání.");
+      }
+    } catch (error) {
+      console.error("Nelze se spojit se serverem:", error);
+    }
   };
 
   const gameName = 'Survival';
@@ -113,7 +153,7 @@ export default function Survival() {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => handleFinish()}
+                  onClick={() => handleSuccess(0)}
                   className="text-2xl py-5 border text-red-500 border-red-500 bg-red-50/30 active:bg-red-50"
                 >
                   0
@@ -170,8 +210,8 @@ export default function Survival() {
                 <Check className="size-10" />
               </div>
               <h2 className="text-3xl font-light mb-2">Survival Dokončen</h2>
-              <p className="text-gray-500 mb-1">Odházeno {round*3} puttů.</p>
-              <p className="text-gray-500 mb-12">Úspěšnost {Math.round((sumOfPutts/(round*3))*100)}%.</p>
+              <p className="text-gray-500 mb-1">Odházeno {history.length*3} puttů.</p>
+              <p className="text-gray-500 mb-12">Úspěšnost {Math.round((sumOfPutts/(history.length*3))*100)}%.</p>
 
               <div className="border border-gray-200 bg-gray-50 rounded-lg py-8 px-12 text-center w-full max-w-sm mb-12">
                 <p className="text-5xl font-light mb-2">{distance}<span className="text-3xl text-gray-400">m</span></p>

@@ -15,7 +15,7 @@ export default function Drill() {
   // STAV BĚHEM HRY
   const [makes, setMakes] = useState(0);
   const [attempts, setAttempts] = useState(0);
-  const [history, setHistory] = useState<{ makes: number, attempts: number }[]>([]);
+  const [history, setHistory] = useState<{ makes: number, attempts: number, distance: number }[]>([]);
 
   // VÝPOČTY
   const successRate = attempts === 0 ? 0 : Math.round((makes / attempts) * 100);
@@ -25,21 +25,29 @@ export default function Drill() {
   const startDrill = () => setPhase('playing');
 
   const handleSuccess = (madeAmount: number) => {
-    setHistory(prev => [...prev, { makes, attempts }]);
-    setMakes(prev => prev + madeAmount);
-    setAttempts(prev => prev + currentThrowCount);
+    const roundAttempts = currentThrowCount;
 
-    if (attempts + currentThrowCount >= targetPutts) {
+    const updatedHistory = [...history, { makes: madeAmount, attempts: roundAttempts, distance }];
+
+    setHistory(updatedHistory);
+    setMakes(prev => prev + madeAmount);
+    setAttempts(prev => prev + roundAttempts);
+
+    if (attempts + roundAttempts >= targetPutts) {
       setTimeout(() => setPhase('finished'), 300);
+
+      const finalScore = makes + madeAmount;
+      saveGameToDb(finalScore, updatedHistory);
     }
   };
 
-  // AKCE: Krok zpět
   const handleBack = () => {
     if (history.length === 0) return;
-    const previousState = history[history.length - 1];
-    setMakes(previousState.makes);
-    setAttempts(previousState.attempts);
+    const lastRound = history[history.length - 1];
+
+    setMakes(prev => prev - lastRound.makes);
+    setAttempts(prev => prev - lastRound.attempts);
+
     setHistory(prev => prev.slice(0, -1));
   };
 
@@ -50,6 +58,42 @@ export default function Drill() {
     setHistory([]);
     setPhase('setup');
   };
+
+  const saveGameToDb = async (finalScore: number, finalHistory: typeof history) => {
+    const totalMakes = finalScore;
+
+    const trainingData = {
+      game_mode_id: "drill",
+      total_score: finalScore,
+      total_makes: totalMakes,
+      total_attempts: targetPutts,
+      rounds: history.map((h, index) => ({
+        round_number: index + 1,
+        distance: h.distance,
+        attempts: h.attempts,
+        makes: h.makes,
+        score_earned: h.makes
+      }))
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/trainings/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(trainingData)
+      });
+
+      if (response.ok) {
+        console.log("Paráda! Hra byla uložena do databáze.");
+      } else {
+        console.error("Něco se pokazilo při ukládání.");
+      }
+    } catch (error) {
+      console.error("Nelze se spojit se serverem:", error);
+    }
+  }
 
   return (
     <div className="size-full bg-white overflow-auto flex flex-col pb-20 min-h-screen">

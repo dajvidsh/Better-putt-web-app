@@ -9,17 +9,19 @@ export default function Jyly() {
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState(false);
   const [pace, setPace] = useState(0);
-  // const amountOfPutts = useState(0);
+  const [makes, setMakes] = useState(0);
+
   const [distance, setDistance] = useState(10);
   const [round, setRound] = useState(1);
   const maxRounds = 20;
-  const [history, setHistory] = useState<{score: number, distance: number, pace: number}[]>([]);
+  const [history, setHistory] = useState<{score: number, distance: number, pace: number, makes: number}[]>([]);
 
   function handleSuccess(amountOfPutts: number) {
     const pointsGained = distance * amountOfPutts;
     const newScore = score + pointsGained;
 
-    setHistory(prev => [...prev, { score, distance, pace }]);
+    const updatedHistory = [...history, { score, distance, pace, makes: amountOfPutts }];
+    setHistory(updatedHistory);
 
     setScore(newScore);
     setDistance(5 + amountOfPutts);
@@ -30,7 +32,7 @@ export default function Jyly() {
     if (round < maxRounds) {
       setRound(round + 1);
     } else {
-      handleFinish();
+      handleFinish(newScore, updatedHistory);
     }
   }
 
@@ -43,12 +45,50 @@ export default function Jyly() {
     setDistance(previousState.distance);
     setRound(prev => prev-1)
     setPace(previousState.pace)
+    setMakes(previousState.makes)
 
     setHistory(prev => prev.slice(0, -1));
   };
 
-  const handleFinish = () => {
-    setPhase(true)
+  const saveGameToDb = async (finalScore: number, finalHistory: typeof history) => {
+    const totalMakes = finalHistory.reduce((sum, round) => sum + round.makes, 0);
+
+    const trainingData = {
+      game_mode_id: "jyly",
+      total_score: finalScore,
+      total_makes: totalMakes,
+      total_attempts: maxRounds * 5,
+      rounds: history.map((h, index) => ({
+        round_number: index + 1,
+        distance: h.distance,
+        attempts: 5,
+        makes: h.makes,
+        score_earned: h.distance * h.makes
+      }))
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/trainings/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(trainingData)
+      });
+
+      if (response.ok) {
+        console.log("Paráda! Hra byla uložena do databáze.");
+      } else {
+        console.error("Něco se pokazilo při ukládání.");
+      }
+    } catch (error) {
+      console.error("Nelze se spojit se serverem:", error);
+    }
+  }
+
+  const handleFinish = (finalScore: number, finalHistory: typeof history) => {
+    setPhase(true);
+    saveGameToDb(finalScore, finalHistory);
   };
 
   const handleReset = () => {
