@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 
 export default function Statistics() {
@@ -14,7 +13,7 @@ export default function Statistics() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch("http://localhost:8000/api/statistics");
+                const response = await fetch("https://better-putt-web-app-server.onrender.com/api/statistics");
                 if (response.ok) {
                     const data = await response.json();
                     setStats(data);
@@ -30,21 +29,21 @@ export default function Statistics() {
     }, []);
 
     // Fiktivní data pro grafy (na ty se vrhneme později)
-    const progressData = [
-        { month: 'Leden', score: 1650 },
-        { month: 'Únor', score: 1720 },
-        { month: 'Březen', score: 1850 },
-    ];
-
-    const weeklyData = [
-        { day: 'Po', minutes: 45 },
-        { day: 'Út', minutes: 0 },
-        { day: 'St', minutes: 60 },
-        { day: 'Čt', minutes: 30 },
-        { day: 'Pá', minutes: 90 },
-        { day: 'So', minutes: 120 },
-        { day: 'Ne', minutes: 75 },
-    ];
+    // const progressData = [
+    //     { month: 'Leden', score: 1650 },
+    //     { month: 'Únor', score: 1720 },
+    //     { month: 'Březen', score: 1850 },
+    // ];
+    //
+    // const weeklyData = [
+    //     { day: 'Po', minutes: 45 },
+    //     { day: 'Út', minutes: 0 },
+    //     { day: 'St', minutes: 60 },
+    //     { day: 'Čt', minutes: 30 },
+    //     { day: 'Pá', minutes: 90 },
+    //     { day: 'So', minutes: 120 },
+    //     { day: 'Ne', minutes: 75 },
+    // ];
 
     // Zatímco se data načítají, ukážeme načítací obrazovku
     if (isLoading) {

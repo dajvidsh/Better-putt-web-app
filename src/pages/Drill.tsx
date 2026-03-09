@@ -67,7 +67,7 @@ export default function Drill() {
       total_score: finalScore,
       total_makes: totalMakes,
       total_attempts: targetPutts,
-      rounds: history.map((h, index) => ({
+      rounds: finalHistory.map((h, index) => ({
         round_number: index + 1,
         distance: h.distance,
         attempts: h.attempts,
@@ -77,7 +77,7 @@ export default function Drill() {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/api/trainings/save", {
+      const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

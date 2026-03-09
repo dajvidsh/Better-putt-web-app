@@ -9,7 +9,6 @@ export default function Jyly() {
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState(false);
   const [pace, setPace] = useState(0);
-  const [makes, setMakes] = useState(0);
 
   const [distance, setDistance] = useState(10);
   const [round, setRound] = useState(1);
@@ -45,7 +44,7 @@ export default function Jyly() {
     setDistance(previousState.distance);
     setRound(prev => prev-1)
     setPace(previousState.pace)
-    setMakes(previousState.makes)
+    // setMakes(previousState.makes)
 
     setHistory(prev => prev.slice(0, -1));
   };
@@ -58,7 +57,7 @@ export default function Jyly() {
       total_score: finalScore,
       total_makes: totalMakes,
       total_attempts: maxRounds * 5,
-      rounds: history.map((h, index) => ({
+      rounds: finalHistory.map((h, index) => ({
         round_number: index + 1,
         distance: h.distance,
         attempts: 5,
@@ -68,7 +67,7 @@ export default function Jyly() {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/api/trainings/save", {
+      const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
