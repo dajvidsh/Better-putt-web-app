@@ -83,6 +83,12 @@ export default function Survival() {
     };
 
     const saveGameToDb = async (finalHistory: typeof history, finalDistance: number, finalSum: number) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error("Uživatel není přihlášen, hru nelze uložit.");
+            return;
+        }
+
         const totalAttempts = finalHistory.length * 3;
 
         const trainingData = {
@@ -103,7 +109,10 @@ export default function Survival() {
             // const response = await fetch("http://localhost:8000/api/trainings/save", {
             const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify(trainingData)
             });
 

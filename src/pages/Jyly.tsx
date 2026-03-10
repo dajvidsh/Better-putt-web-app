@@ -45,13 +45,20 @@ export default function Jyly() {
     };
 
     const saveGameToDb = async (finalScore: number, finalHistory: typeof history) => {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            console.error("Uživatel není přihlášen, hru nelze uložit.");
+            return;
+        }
+
         const totalMakes = finalHistory.reduce((sum, round) => sum + round.makes, 0);
 
         const trainingData = {
             game_mode_id: "jyly",
             total_score: finalScore,
             total_makes: totalMakes,
-            total_attempts: maxRounds * 5,
+            total_attempts: finalHistory.length * 5,
             rounds: finalHistory.map((h, index) => ({
                 round_number: index + 1,
                 distance: h.distance,
@@ -62,10 +69,11 @@ export default function Jyly() {
         };
 
         try {
-            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
+            const response = await fetch("/api/trainings/save", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(trainingData)
             });
@@ -73,7 +81,8 @@ export default function Jyly() {
             if (response.ok) {
                 console.log("Paráda! Hra byla uložena do databáze.");
             } else {
-                console.error("Něco se pokazilo při ukládání.");
+                const errorData = await response.json();
+                console.error("Chyba při ukládání:", errorData.detail);
             }
         } catch (error) {
             console.error("Nelze se spojit se serverem:", error);

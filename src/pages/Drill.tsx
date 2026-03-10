@@ -54,6 +54,12 @@ export default function Drill() {
     };
 
     const saveGameToDb = async (finalScore: number, finalHistory: typeof history) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error("Uživatel není přihlášen, hru nelze uložit.");
+            return;
+        }
+
         const totalMakes = finalScore;
 
         const trainingData = {
@@ -74,7 +80,9 @@ export default function Drill() {
             const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    // 2. PŘIDÁNÍ TOKENU DO HLAVIČKY
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(trainingData)
             });
