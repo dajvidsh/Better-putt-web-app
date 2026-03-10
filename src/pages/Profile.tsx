@@ -36,7 +36,7 @@ export default function Profile() {
                 navigate('/login');
             });
 
-        fetch("/api/statistics", {
+        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {
             headers: { "Authorization": `Bearer ${token}` }
         })
         .then(res => res.json())

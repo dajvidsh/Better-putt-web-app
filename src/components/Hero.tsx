@@ -23,19 +23,19 @@ export default function Hero() {
         const headers = { "Authorization": `Bearer ${token}` };
 
         // 1. Načtení info o uživateli (pro pozdrav)
-        fetch("/api/me", { headers })
+        fetch("https://better-putt-web-app-server.onrender.com/api/me", { headers })
             .then(res => res.ok ? res.json() : Promise.reject())
             .then(data => setUser(data))
             .catch(() => setIsLoggedIn(false));
 
         // 2. Načtení statistik (pro horní boxy)
-        fetch("/api/statistics", { headers })
+        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", { headers })
             .then(res => res.ok ? res.json() : null)
             .then(data => setStats(data))
             .catch(err => console.error("Chyba statistik:", err));
 
         // 3. Načtení historie (pro seznam aktivit)
-        fetch("/api/games", { headers })
+        fetch("https://better-putt-web-app-server.onrender.com/api/games", { headers })
             .then(res => res.ok ? res.json() : [])
             .then(data => setGames(data))
             .catch(err => console.error("Chyba her:", err));

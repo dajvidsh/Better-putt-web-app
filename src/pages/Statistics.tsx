@@ -14,7 +14,7 @@ export default function Statistics() {
             return;
         }
         const headers = { "Authorization": `Bearer ${token}` };
-        fetch("/api/statistics", { headers }).then(res => res.json()).then(setStats);
+        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", { headers }).then(res => res.json()).then(setStats);
         // const fetchStats = async () => {
         //     try {
         //         const response = await fetch("https://better-putt-web-app-server.onrender.com/api/statistics");

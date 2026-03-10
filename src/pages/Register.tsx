@@ -15,7 +15,7 @@ export default function Register() {
         setError('');
 
         try {
-            const response = await fetch("/api/join", {
+            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/join", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({email, password, username}),

@@ -19,7 +19,7 @@ export default function Login() {
         formData.append('password', password);
 
         try {
-            const response = await fetch("/api/gate", {
+            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData,
