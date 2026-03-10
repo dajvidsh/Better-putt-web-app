@@ -5,24 +5,31 @@ import {useState, useEffect} from 'react';
 export default function Statistics() {
     const navigate = useNavigate();
     const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await fetch("https://better-putt-web-app-server.onrender.com/api/statistics");
-                if (response.ok) {
-                    const data = await response.json();
-                    setStats(data);
-                }
-            } catch (error) {
-                console.error("Chyba při stahování statistik:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        const token = localStorage.getItem('token');
 
-        fetchStats();
+        if (!token) {
+            return;
+        }
+        const headers = { "Authorization": `Bearer ${token}` };
+        fetch("/api/statistics", { headers }).then(res => res.json()).then(setStats);
+        // const fetchStats = async () => {
+        //     try {
+        //         const response = await fetch("https://better-putt-web-app-server.onrender.com/api/statistics");
+        //         if (response.ok) {
+        //             const data = await response.json();
+        //             setStats(data);
+        //         }
+        //     } catch (error) {
+        //         console.error("Chyba při stahování statistik:", error);
+        //     } finally {
+        //         setIsLoading(false);
+        //     }
+        // };
+
+        // fetchStats();
     }, []);
 
     // Fiktivní data pro grafy (na ty se vrhneme později)
@@ -42,13 +49,13 @@ export default function Statistics() {
     //     { day: 'Ne', minutes: 75 },
     // ];
 
-    if (isLoading) {
-        return (
-            <div className="size-full bg-white flex items-center justify-center">
-                <p className="text-gray-400 font-light">Načítám statistiky...</p>
-            </div>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <div className="size-full bg-white flex items-center justify-center">
+    //             <p className="text-gray-400 font-light">Načítám statistiky...</p>
+    //         </div>
+    //     );
+    // }
 
     const overview = stats?.overview || {
         total_score: 0,
@@ -75,7 +82,8 @@ export default function Statistics() {
                 <div className="py-6">
                     <h2 className="text-sm text-gray-400 mb-4">Přehled</h2>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="border border-gray-100 rounded-lg p-4">
+                        <div
+                            className="w-full border border-gray-200 rounded-lg p-4 active:bg-gray-50 bg-white transition-colors shadow-sm">
                             {/*<div className="flex items-center gap-2 text-green-600 mb-2">*/}
                             {/*  <TrendingUp className="size-4" />*/}
                             {/*  <span className="text-xs">+15%</span>*/}
@@ -84,7 +92,8 @@ export default function Statistics() {
                             <p className="text-xs text-gray-400">Celkem puttů</p>
                         </div>
 
-                        <div className="border border-gray-100 rounded-lg p-4">
+                        <div
+                            className="w-full border border-gray-200 rounded-lg p-4 active:bg-gray-50 bg-white transition-colors shadow-sm">
                             {/*<div className="flex items-center gap-2 text-green-600 mb-2">*/}
                             {/*  <TrendingUp className="size-4" />*/}
                             {/*  <span className="text-xs">+5</span>*/}
@@ -93,12 +102,14 @@ export default function Statistics() {
                             <p className="text-xs text-gray-400">Umístění</p>
                         </div>
 
-                        <div className="border border-gray-100 rounded-lg p-4">
+                        <div
+                            className="w-full border border-gray-200 rounded-lg p-4 active:bg-gray-50 bg-white transition-colors shadow-sm">
                             <p className="text-2xl font-light mb-1">{overview.total_trainings}</p>
                             <p className="text-xs text-gray-400">Celkem tréninků</p>
                         </div>
 
-                        <div className="border border-gray-100 rounded-lg p-4">
+                        <div
+                            className="w-full border border-gray-200 rounded-lg p-4 active:bg-gray-50 bg-white transition-colors shadow-sm">
                             <p className="text-2xl font-light mb-1">{overview.total_time_hours}</p>
                             <p className="text-xs text-gray-400">Celkový čas</p>
                         </div>
@@ -147,7 +158,8 @@ export default function Statistics() {
                     ) : (
                         <div className="space-y-4">
                             {gameStats.map((game: any, index: number) => (
-                                <div key={index} className="border border-gray-100 rounded-lg p-4">
+                                <div key={index}
+                                     className="w-full border border-gray-200 rounded-lg p-4 active:bg-gray-50 bg-white transition-colors shadow-sm">
                                     <h3 className="font-normal mb-3">{game.name}</h3>
                                     <div className="grid grid-cols-3 gap-4 text-center">
                                         <div>

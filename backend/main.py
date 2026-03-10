@@ -1,15 +1,20 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import models
-from database import engine, get_db
-import schemas
-from typing import List
+from typing import List, Optional
 from sqlalchemy.sql import func
+from datetime import timedelta, datetime
+from jose import JWTError, jwt
+
+import models
+import schemas
+import auth_utils
+from database import engine, get_db
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 # Tento řádek automaticky vytvoří tabulky v Neon DB podle souboru models.py
 models.Base.metadata.create_all(bind=engine)
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/gate")
 app = FastAPI(title="Better Putt API")
 
 # Nastavení CORS (jako minule)
@@ -72,10 +77,72 @@ def seed_database(db: Session = Depends(get_db)):
     return {"message": "Databáze byla úspěšně naplněna startovacími daty!"}
 
 
+@app.post("/api/join", response_model=schemas.UserOut)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # Zkontrolujeme, jestli uživatel už neexistuje
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email už je zaregistrován")
+
+    # Hashování hesla!
+    hashed_pwd = auth_utils.get_password_hash(user.password)
+
+    new_user = models.User(
+        email=user.email,
+        hashed_password=hashed_pwd,
+        username=user.username
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+@app.post("/api/gate", response_model=schemas.Token)
+def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
+    # 1. Najdeme uživatele podle emailu (OAuth2PasswordRequestForm dává email do pole username)
+    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+
+    # 2. Ověříme heslo
+    if not user or not auth_utils.verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Nesprávný email nebo heslo",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # 3. Vytvoříme token
+    access_token_expires = timedelta(minutes=auth_utils.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth_utils.create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, auth_utils.SECRET_KEY, algorithms=[auth_utils.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user is None:
+        raise credentials_exception
+    return user
+
 @app.post("/api/trainings/save", response_model=schemas.GameSessionResponse)
-def save_training(session_data: schemas.GameSessionCreate, db: Session = Depends(get_db)):
-    # 1. Zatím si "natvrdo" řekneme, že hru ukládá uživatel s ID 1 (později to nahradíme reálným přihlášením)
-    user_id = 1
+def save_training(session_data: schemas.GameSessionCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = current_user.id
 
     # 2. Vytvoříme hlavní záznam o hře
     db_session = models.GameSession(
@@ -111,19 +178,15 @@ def save_training(session_data: schemas.GameSessionCreate, db: Session = Depends
 
 
 @app.get("/api/statistics")
-def get_user_statistics(db: Session = Depends(get_db)):
-    # Znovu zatím používáme natvrdo uživatele ID = 1
-    user_id = 1
+def get_user_statistics(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = current_user.id
 
-    # Vytáhneme VŠECHNY hry tohoto uživatele
     sessions = db.query(models.GameSession).filter(models.GameSession.user_id == user_id).all()
 
-    # 1. Celkový přehled (Overview)
     total_trainings = len(sessions)
     total_score = sum(session.total_score for session in sessions)
     total_putts = sum(session.total_attempts for session in sessions)
 
-    # 2. Statistiky podle herních módů (gameStats)
     game_stats_dict = {}
 
     for session in sessions:
@@ -150,20 +213,16 @@ def get_user_statistics(db: Session = Depends(get_db)):
         if session.total_score > stats["bestScore"]:
             stats["bestScore"] = session.total_score
 
-        # Nejlepší procentuální úspěšnost v jedné hře (pro Drill)
         if session.total_attempts > 0:
             pct = round((session.total_makes / session.total_attempts) * 100)
             if pct > stats["best_percentage"]:
                 stats["best_percentage"] = pct
 
-    # Přepočítáme průměry a vytvoříme finální list
     formatted_game_stats = []
     for mode, stats in game_stats_dict.items():
         if mode == "drill":
-            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats[
-                                                                                               "total_attempts_sum"] > 0 else 0
+            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats["total_attempts_sum"] > 0 else 0
             best = stats["best_percentage"]
-            # Jinak posíláme normální body (JYLY, Survival)
         else:
             avg = round(stats["total_score_sum"] / stats["attempts"]) if stats["attempts"] > 0 else 0
             best = stats["bestScore"]
@@ -180,7 +239,6 @@ def get_user_statistics(db: Session = Depends(get_db)):
             "total_score": total_score,
             "total_trainings": total_trainings,
             "total_putts": total_putts,
-            # Tyto dvě hodnoty si zatím necháme fiktivní, dokud nemáme žebříčky a měření času
             "rank": 47,
             "total_time_hours": "12h"
         },
@@ -189,8 +247,8 @@ def get_user_statistics(db: Session = Depends(get_db)):
 
 
 @app.get('/api/games')
-def get_games(db: Session = Depends(get_db)):
-    user_id = 1
+def get_games(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = current_user.id
 
     sessions = db.query(models.GameSession).filter(models.GameSession.user_id == user_id).order_by(
         models.GameSession.completed_at.desc()).all()
@@ -230,3 +288,7 @@ def get_games(db: Session = Depends(get_db)):
         })
 
     return game_modes_dict
+
+@app.get("/api/me", response_model=schemas.UserOut)
+def get_current_user_info(current_user: models.User = Depends(get_current_user)):
+    return current_user

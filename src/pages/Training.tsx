@@ -46,7 +46,7 @@ export default function Training() {
                         <button
                             key={game.id}
                             onClick={() => navigate(`/training/${game.id}`)}
-                            className="w-full border border-gray-100 rounded-lg p-5 active:bg-gray-50 transition-colors"
+                            className="w-full border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm"
                         >
                             <div className="flex items-start gap-4">
                                 <div className="border border-gray-200 rounded-lg p-3 flex-shrink-0">

@@ -8,13 +8,28 @@ from datetime import datetime
 # ==========================================
 class UserBase(BaseModel):
     username: str
-    email: EmailStr  # Pydantic automaticky zkontroluje, jestli je to platný e-mail
+    email: EmailStr
     avatar_url: Optional[str] = None
 
-
-# Tohle přijde z Reactu při registraci
 class UserCreate(UserBase):
+    email: EmailStr
     password: str
+    username: str
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    username: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
 
 # Tohle vracíme Reactu (bez hesla!)
@@ -22,7 +37,6 @@ class UserResponse(UserBase):
     id: int
     created_at: datetime
 
-    # Tento řádek říká Pydanticu, že má číst data ze SQLAlchemy modelů
     model_config = ConfigDict(from_attributes=True)
 
 

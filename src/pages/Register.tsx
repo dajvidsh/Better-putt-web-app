@@ -6,12 +6,32 @@ import * as React from "react";
 export default function Register() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
-    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/');
+        setError('');
+
+        try {
+            const response = await fetch("/api/join", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email, password, username}),
+            });
+
+            if (response.ok) {
+                // TADY: Ujisti se, že naviguješ na pevnou adresu jako řetězec
+                navigate('/login');
+            } else {
+                const data = await response.json();
+                // Pokud detail není text, převedeme ho na text (prevence pádu)
+                setError(typeof data.detail === 'string' ? data.detail : "Chyba registrace");
+            }
+        } catch (err) {
+            setError("Nelze se spojit se serverem (CORS nebo vypnutý backend)");
+        }
     };
 
     return (
@@ -23,21 +43,21 @@ export default function Register() {
                         <Target className="size-8"/>
                     </div>
                     <h1 className="text-3xl font-light mb-2">Better Putt</h1>
-                    <p className="text-gray-500">Registrovat</p>
+                    <p className="text-gray-500">Registrace</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleRegister} className="space-y-6">
                     <div>
-                        <label htmlFor="name" className="block text-sm text-gray-600 mb-2">
-                            Jméno
+                        <label htmlFor="username" className="block text-sm text-gray-600 mb-2">
+                            Jméno a Příjmení
                         </label>
                         <input
-                            id="name"
+                            id="username"
                             type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             className="w-full px-0 py-3 border-0 border-b border-gray-200 focus:border-black outline-none transition-colors bg-transparent"
-                            placeholder="Jméno Přijmení"
+                            placeholder="Paul McBeth"
                             required
                         />
                     </div>
@@ -72,11 +92,18 @@ export default function Register() {
                         />
                     </div>
 
+                    {/* Zobrazení chybové hlášky */}
+                    {error && (
+                        <p className="text-red-500 text-sm text-center bg-red-50 py-2 rounded-lg">
+                            {error}
+                        </p>
+                    )}
+
                     <button
                         type="submit"
                         className="w-full bg-black text-white py-4 mt-8 flex items-center justify-center gap-2 active:opacity-70 transition-opacity"
                     >
-                        Pokračovat
+                        Registrovat se
                         <ArrowRight className="size-4"/>
                     </button>
                 </form>
@@ -89,7 +116,8 @@ export default function Register() {
             <div className="px-8 pb-8 text-center">
                 <p className="text-sm text-gray-400">
                     Už máte účet?{' '}
-                    <button onClick={() => navigate('/login')} className="text-black underline">Přihlásit</button>
+                    <button onClick={() => navigate('/login')} className="text-black underline font-medium">Přihlásit
+                    </button>
                 </p>
             </div>
         </div>
