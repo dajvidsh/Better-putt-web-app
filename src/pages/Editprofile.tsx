@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router';
 import {ArrowLeft, User} from 'lucide-react';
+import * as React from "react";
 
 export default function Editprofile() {
     const navigate = useNavigate();
@@ -13,10 +14,7 @@ export default function Editprofile() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Zde bude logika pro uložení změn (např. odeslání do Supabase/Firebase API)
         console.log('Ukládám profil:', {username, email, avatarUrl, newPassword});
-
-        // Po úspěšném uložení se vrátíme zpět
         navigate(-1);
     };
 
@@ -101,14 +99,11 @@ export default function Editprofile() {
                                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-5 px-4 py-3 text-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all"
                                 placeholder="Zadej nové heslo"
                             />
-                            {/*<p className="text-xs text-slate-400 ml-2 mt-1">Změna hesla.</p>*/}
                         </div>
                     </div>
 
-                    {/* Spacer pro vytlačení tlačítka dolů */}
                     <div className="flex-1 mt-4"></div>
 
-                    {/* Tlačítko Uložit */}
                     <button
                         type="submit"
                         className="w-full bg-black text-white py-4 mt-8 active:opacity-70 transition-opacity"

@@ -45,20 +45,7 @@ export default function GameDetail() {
             bestScore: '92m',
             avgScore: '78m',
             attempts: 15,
-        },
-        // speed: {
-        //   name: 'Speed Round',
-        //   description: 'Rychlý herní scénář pod časovým tlakem.',
-        //   rules: [
-        //     'Zahrajte 9 jamek co nejrychleji',
-        //     'Zaznamenejte počet hodů a čas',
-        //     'Penalizace +2 hody za OB',
-        //     'Cíl: pod 30 minut',
-        //   ],
-        //   bestScore: '32 hodů',
-        //   avgScore: '38 hodů',
-        //   attempts: 6,
-        // },
+        }
     };
 
     const game = gameData[gameId || ''] || gameData.jyly;

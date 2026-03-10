@@ -4,12 +4,9 @@ import {useState, useEffect} from 'react';
 
 export default function Statistics() {
     const navigate = useNavigate();
-
-    // Stav pro uložení dat z databáze
     const [stats, setStats] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Získání dat z backendu
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -45,7 +42,6 @@ export default function Statistics() {
     //     { day: 'Ne', minutes: 75 },
     // ];
 
-    // Zatímco se data načítají, ukážeme načítací obrazovku
     if (isLoading) {
         return (
             <div className="size-full bg-white flex items-center justify-center">
@@ -54,7 +50,6 @@ export default function Statistics() {
         );
     }
 
-    // Pokud nemáme data, použijeme bezpečné výchozí hodnoty
     const overview = stats?.overview || {
         total_score: 0,
         total_trainings: 0,
@@ -77,7 +72,6 @@ export default function Statistics() {
             </div>
 
             <div className="px-6 pb-24">
-                {/* Overview Cards (Nyní napojeno na DB!) */}
                 <div className="py-6">
                     <h2 className="text-sm text-gray-400 mb-4">Přehled</h2>
                     <div className="grid grid-cols-2 gap-3">
@@ -165,7 +159,6 @@ export default function Statistics() {
                                             <p className="text-xs text-gray-400">Průměr</p>
                                         </div>
                                         <div>
-                                            {/*<p className="text-lg font-light">{game.bestScore}</p>*/}
                                             <p className="text-lg font-light">{game.bestScore} {game.name === 'DRILL' ? '%' : game.name === 'SURVIVAL' ? 'm' : ''}</p>
                                             <p className="text-xs text-gray-400">Nejlepší</p>
                                         </div>

@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { ArrowLeft, ChevronRight, ExternalLink, Moon, Ruler, Shield, Trash2 } from "lucide-react";
+import {useState} from "react";
+import {useNavigate} from "react-router";
+import {ArrowLeft, ChevronRight, ExternalLink, Moon, Ruler, Shield, Trash2} from "lucide-react";
 
 export default function Settings() {
     const navigate = useNavigate();
 
-    // Lokální stavy pro ukázku (později napojíš např. na Redux nebo localStorage)
     const [unit, setUnit] = useState<"Metry" | "Stopy">("Metry");
     const [theme, setTheme] = useState<"Světlý" | "Tmavý">("Světlý");
 
@@ -23,14 +22,14 @@ export default function Settings() {
 
     return (
         <div className="size-full bg-white overflow-auto pb-20">
-          <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
-            <div className="flex items-center gap-4 px-6 py-4">
-              <button onClick={() => navigate(-1)} className="p-2 -ml-2 active:opacity-50 transition-opacity">
-                <ArrowLeft className="size-5" />
-              </button>
-              <h1 className="text-sm font-normal tracking-wide">NASTAVENÍ</h1>
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
+                <div className="flex items-center gap-4 px-6 py-4">
+                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 active:opacity-50 transition-opacity">
+                        <ArrowLeft className="size-5"/>
+                    </button>
+                    <h1 className="text-sm font-normal tracking-wide">NASTAVENÍ</h1>
+                </div>
             </div>
-          </div>
 
             {/* Předvolby aplikace */}
             <div className="px-6 pb-10 pt-5">
@@ -41,12 +40,12 @@ export default function Settings() {
                     className="w-full flex items-center justify-between py-4 active:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
-                        <Ruler className="size-5 text-gray-600" strokeWidth={1.5} />
+                        <Ruler className="size-5 text-gray-600" strokeWidth={1.5}/>
                         <span>Jednotky vzdálenosti</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-gray-500">{unit}</span>
-                        <ChevronRight className="size-5 text-gray-300" />
+                        <ChevronRight className="size-5 text-gray-300"/>
                     </div>
                 </button>
 
@@ -55,12 +54,12 @@ export default function Settings() {
                     className="w-full flex items-center justify-between py-4 active:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
-                        <Moon className="size-5 text-gray-600" strokeWidth={1.5} />
+                        <Moon className="size-5 text-gray-600" strokeWidth={1.5}/>
                         <span>Vzhled aplikace</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-gray-500">{theme}</span>
-                        <ChevronRight className="size-5 text-gray-300" />
+                        <ChevronRight className="size-5 text-gray-300"/>
                     </div>
                 </button>
             </div>
@@ -70,14 +69,14 @@ export default function Settings() {
                 <h2 className="text-sm text-gray-400 mb-2">O aplikaci</h2>
 
                 <button
-                    onClick={() => navigate('/privacy')} // Můžeš přidat statickou routu pro text o soukromí
+                    onClick={() => navigate('/privacy')}
                     className="w-full flex items-center justify-between py-4 active:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
-                        <Shield className="size-5 text-gray-600" strokeWidth={1.5} />
+                        <Shield className="size-5 text-gray-600" strokeWidth={1.5}/>
                         <span>Ochrana osobních údajů</span>
                     </div>
-                    <ChevronRight className="size-5 text-gray-300" />
+                    <ChevronRight className="size-5 text-gray-300"/>
                 </button>
 
                 <a
@@ -87,10 +86,10 @@ export default function Settings() {
                     className="w-full flex items-center justify-between py-4 active:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
-                        <ExternalLink className="size-5 text-gray-600" strokeWidth={1.5} />
+                        <ExternalLink className="size-5 text-gray-600" strokeWidth={1.5}/>
                         <span>Pravidla discgolfu (PDGA)</span>
                     </div>
-                    <ChevronRight className="size-5 text-gray-300" />
+                    <ChevronRight className="size-5 text-gray-300"/>
                 </a>
             </div>
 
@@ -102,7 +101,7 @@ export default function Settings() {
                     onClick={handleDeleteAccount}
                     className="w-full flex items-center justify-center gap-2 py-4 mt-8 text-red-500 active:opacity-50 transition-opacity"
                 >
-                    <Trash2 className="size-5" strokeWidth={1.5} />
+                    <Trash2 className="size-5" strokeWidth={1.5}/>
                     <span>Smazat účet</span>
                 </button>
             </div>

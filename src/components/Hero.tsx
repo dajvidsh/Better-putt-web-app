@@ -8,9 +8,6 @@ export default function Hero() {
     const navigate = useNavigate();
     const [games, setGames] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
-    // const [isLoading, setIsLoading] = useState(true);
-
-    // const stats = [24, 12, 23];
 
     useEffect(() => {
         fetch("https://better-putt-web-app-server.onrender.com/api/games")

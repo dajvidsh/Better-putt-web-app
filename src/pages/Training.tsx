@@ -29,15 +29,7 @@ export default function Training() {
             difficulty: 'Pokročilý',
             duration: '20 min',
             icon: Repeat,
-        },
-        // {
-        //   id: 'speed',
-        //   name: 'Speed Round',
-        //   description: 'Rychlý herní scénář pod tlakem',
-        //   difficulty: 'Pokročilý',
-        //   duration: '30 min',
-        //   icon: Zap,
-        // },
+        }
     ];
 
     return (
