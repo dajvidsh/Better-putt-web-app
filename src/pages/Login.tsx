@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Target } from 'lucide-react';
+import {ArrowLeft, ArrowRight, Target} from 'lucide-react';
 import * as React from "react";
 
 export default function Login() {
@@ -41,8 +41,17 @@ export default function Login() {
     };
 
     return (
-        <div className="size-full bg-white flex flex-col pb-10 pt-10">
-            <div className="flex-1 flex flex-col justify-center px-8">
+        <div className="size-full bg-white flex flex-col pb-10">
+            {/* Hlavička */}
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
+                <div className="flex items-center gap-4 px-6 py-4">
+                    <button onClick={() => navigate('/')} className="p-2 -ml-2 active:opacity-50 transition-opacity">
+                        <ArrowLeft className="size-5"/>
+                    </button>
+                    <h1 className="text-sm font-normal tracking-wide">ZPĚT</h1>
+                </div>
+            </div>
+            <div className="flex-1 flex flex-col justify-center px-8 pt-10">
                 <div className="mb-12 text-center">
                     <div className="inline-flex items-center justify-center size-16 border-2 border-black rounded-full mb-6">
                         <Target className="size-8" />

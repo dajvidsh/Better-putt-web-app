@@ -17,30 +17,31 @@ export default function Profile() {
             return;
         }
 
-        // fetch("https://better-putt-web-app-server.onrender.com/api/games")
-        fetch("/api/me", {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        })
+        const headers = {"Authorization": `Bearer ${token}`};
+
+        fetch("https://better-putt-web-app-server.onrender.com/api/me", {headers})
             .then(res => {
-                if (res.status === 401) throw new Error("Unauthorized");
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                    throw new Error("Unauthorized");
+                }
+                if (!res.ok) throw new Error("Server error");
                 return res.json();
             })
             .then(data => {
                 setUser(data);
                 setLoading(false);
             })
-            .catch(() => {
-                localStorage.removeItem('token');
-                navigate('/login');
+            .catch(err => {
+                console.error("Profile fetch error:", err);
+                // Zde nesmažeme token, pokud jde o jinou chybu než 401
             });
 
-        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {
-            headers: { "Authorization": `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => setStats(data));
+        fetch("/api/statistics", {headers})
+            .then(res => res.json())
+            .then(data => setStats(data))
+            .catch(err => console.error("Stats fetch error:", err));
     }, [navigate]);
 
     if (loading) return <div className="p-6 text-center">Načítání profilu...</div>;
@@ -93,15 +94,18 @@ export default function Profile() {
             <div className="py-6 border-b border-gray-100">
                 <h2 className="text-sm text-gray-400 mb-4">Úspěchy</h2>
                 <div className="flex gap-3">
-                    <div className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
+                    <div
+                        className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
                         <Target className="size-6 mx-auto mb-2" strokeWidth={1.5}/>
                         <p className="text-xs text-gray-600">50 tréninků</p>
                     </div>
-                    <div className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
+                    <div
+                        className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
                         <TrendingUp className="size-6 mx-auto mb-2" strokeWidth={1.5}/>
                         <p className="text-xs text-gray-600">1000 puttů</p>
                     </div>
-                    <div className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
+                    <div
+                        className="flex-1 border border-gray-200 rounded-lg p-4 text-center active:bg-gray-50 bg-white transition-colors shadow-sm">
                         <Award className="size-6 mx-auto mb-2" strokeWidth={1.5}/>
                         <p className="text-xs text-gray-600">Top 3</p>
                     </div>
