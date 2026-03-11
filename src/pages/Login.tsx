@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import {useState} from 'react';
+import {useNavigate} from 'react-router';
 import {ArrowLeft, ArrowRight, Target} from 'lucide-react';
 import * as React from "react";
 
@@ -10,67 +10,45 @@ export default function Login() {
     const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+        e.preventDefault();
+        setError('');
 
-    // 1. Zkusíme poslat klasické JSON (často bývá stabilnější, pokud nemáš striktní OAuth2)
-    // Pokud tvůj backend vyžaduje Form Data, nech tam ten URLSearchParams kód.
-    try {
-        const response = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json" // Zkus nejdřív JSON
-            },
-            body: JSON.stringify({
-                username: email, // FastAPI často chce email v poli 'username'
-                password: password
-            }),
-        });
-
-        // 2. Pokud JSON neprojde (vyskočí 422), zkusíme okamžitě Form Data
-        if (response.status === 422 || !response.ok) {
+        try {
             const formData = new URLSearchParams();
             formData.append('username', email);
             formData.append('password', password);
 
-            const formResponse = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
+            // Použij buď plnou URL nebo relativní, ale konzistentně!
+            const response = await fetch("/api/gate", {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
                 body: formData,
             });
 
-            if (formResponse.ok) {
-                const data = await formResponse.json();
+            if (response.ok) {
+                const data = await response.json();
                 processLogin(data);
-                return;
+            } else {
+                setError('Nesprávné údaje.');
             }
+        } catch (err) {
+            setError('Nelze se spojit se serverem.');
         }
-
-        if (response.ok) {
-            const data = await response.json();
-            processLogin(data);
-        } else {
-            const errorData = await response.json().catch(() => ({ detail: 'Chyba serveru' }));
-            setError(errorData.detail || 'Nesprávné údaje.');
-        }
-    } catch (err) {
-        setError('Nelze se spojit se serverem.');
-    }
-};
+    };
 
 // Pomocná funkce, aby se kód neopakoval
-const processLogin = (data: any) => {
-    localStorage.setItem('token', data.access_token);
+    const processLogin = (data: any) => {
+        localStorage.setItem('token', data.access_token);
 
-    // TADY JE TA DŮLEŽITÁ ČÁST PRO CACHE:
-    // Po přihlášení MUSÍME smazat starou cache, jinak uvidíš data
-    // předchozího uživatele nebo staré nesmysly.
-    localStorage.removeItem('cache_user');
-    localStorage.removeItem('cache_stats');
-    localStorage.removeItem('cache_games');
+        // TADY JE TA DŮLEŽITÁ ČÁST PRO CACHE:
+        // Po přihlášení MUSÍME smazat starou cache, jinak uvidíš data
+        // předchozího uživatele nebo staré nesmysly.
+        localStorage.removeItem('cache_user');
+        localStorage.removeItem('cache_stats');
+        localStorage.removeItem('cache_games');
 
-    navigate('/');
-};
+        navigate('/');
+    };
 
     return (
         <div className="size-full bg-white flex flex-col pb-10">
@@ -85,8 +63,9 @@ const processLogin = (data: any) => {
             </div>
             <div className="flex-1 flex flex-col justify-center px-8 pt-10">
                 <div className="mb-12 text-center">
-                    <div className="inline-flex items-center justify-center size-16 border-2 border-black rounded-full mb-6">
-                        <Target className="size-8" />
+                    <div
+                        className="inline-flex items-center justify-center size-16 border-2 border-black rounded-full mb-6">
+                        <Target className="size-8"/>
                     </div>
                     <h1 className="text-3xl font-light mb-2">Better Putt</h1>
                     <p className="text-gray-500">Přihlášení</p>
@@ -136,7 +115,7 @@ const processLogin = (data: any) => {
                         className="w-full bg-black text-white py-4 mt-8 flex items-center justify-center gap-2 active:opacity-70 transition-opacity"
                     >
                         Přihlásit se
-                        <ArrowRight className="size-4" />
+                        <ArrowRight className="size-4"/>
                     </button>
                 </form>
 
@@ -148,7 +127,9 @@ const processLogin = (data: any) => {
             <div className="px-8 pb-8 text-center">
                 <p className="text-sm text-gray-400">
                     Nemáte účet?{' '}
-                    <button onClick={() => navigate('/register')} className="text-black underline font-medium">Registrovat</button>
+                    <button onClick={() => navigate('/register')}
+                            className="text-black underline font-medium">Registrovat
+                    </button>
                 </p>
             </div>
         </div>
