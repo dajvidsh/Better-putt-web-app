@@ -9,6 +9,7 @@ export default function Register() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,7 +17,7 @@ export default function Register() {
 
         try {
             // const response = await fetch("https://better-putt-web-app-server.onrender.com/api/join", {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/join`, {
+            const response = await fetch(`${API_BASE_URL}/api/join`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({email, password, username}),

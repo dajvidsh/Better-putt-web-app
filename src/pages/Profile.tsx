@@ -17,6 +17,7 @@ export default function Profile() {
 
     // Loading je false, pokud už jsme něco vyhrabali z cache
     const [loading, setLoading] = useState(!user);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -28,7 +29,7 @@ export default function Profile() {
         const headers = {"Authorization": `Bearer ${token}`};
 
         // 2. Refresh uživatele
-        fetch(`${import.meta.env.VITE_API_URL}/api/me`, {headers})
+        fetch(`${API_BASE_URL}/api/me`, {headers})
             .then(res => {
                 if (res.status === 401) {
                     localStorage.clear();
@@ -48,7 +49,7 @@ export default function Profile() {
             });
 
         // 3. Refresh statistik na pozadí
-        fetch(`${import.meta.env.VITE_API_URL}/api/statistics`, {headers})
+        fetch(`${API_BASE_URL}/api/statistics`, {headers})
             .then(res => res.json())
             .then(data => {
                 setStats(data);

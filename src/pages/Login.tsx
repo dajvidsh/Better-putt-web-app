@@ -8,6 +8,7 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,7 +16,7 @@ export default function Login() {
 
     // Použití centrální adresy
     // const API_URL = `https://better-putt-web-app-server.onrender.com/api/gate`;
-    const API_URL = `${import.meta.env.VITE_API_URL}/api/gate`;
+    const API_URL = `${API_BASE_URL}/api/gate`;
 
     try {
         const formData = new URLSearchParams();

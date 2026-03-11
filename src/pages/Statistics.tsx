@@ -12,13 +12,14 @@ export default function Statistics() {
     };
 
     const [stats, setStats] = useState<any>(getCachedData);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
         // fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {
-        fetch(`${import.meta.env.VITE_API_URL}/api/statistics`, {
+        fetch(`${API_BASE_URL}/api/statistics`, {
             headers: { "Authorization": `Bearer ${token}` }
         })
         .then(res => res.json())

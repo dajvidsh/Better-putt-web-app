@@ -19,6 +19,7 @@ export default function Hero() {
         return saved ? JSON.parse(saved) : null;
     }); // Data z /api/statistics
     const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'));
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -30,7 +31,7 @@ export default function Hero() {
         const headers = {"Authorization": `Bearer ${token}`};
 
         // 1. Načtení info o uživateli (pro pozdrav)
-        fetch(`${import.meta.env.VITE_API_URL}/api/me`, {headers})
+        fetch(`${API_BASE_URL}/api/me`, {headers})
         // fetch("https://127.0.0.1:8000/api/me", {headers})
             .then(res => res.ok ? res.json() : Promise.reject())
             .then(data => {
@@ -40,7 +41,7 @@ export default function Hero() {
             .catch(() => setIsLoggedIn(false));
 
         // 2. Načtení statistik (pro horní boxy)
-        fetch(`${import.meta.env.VITE_API_URL}/api/statistics`, {headers})
+        fetch(`${API_BASE_URL}/api/statistics`, {headers})
         // fetch("https://127.0.0.1:8000/api/statistics", {headers})
             .then(res => res.ok ? res.json() : null)
             .then(data => {
@@ -51,7 +52,7 @@ export default function Hero() {
             });
 
         // 3. Načtení historie (pro seznam aktivit)
-        fetch(`${import.meta.env.VITE_API_URL}/api/games`, {headers})
+        fetch(`${API_BASE_URL}/api/games`, {headers})
         // fetch("https://127.0.0.1:8000/api/games", {headers})
             .then(res => res.ok ? res.json() : [])
             .then(data => {
