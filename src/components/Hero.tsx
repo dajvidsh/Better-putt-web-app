@@ -30,7 +30,8 @@ export default function Hero() {
         const headers = {"Authorization": `Bearer ${token}`};
 
         // 1. Načtení info o uživateli (pro pozdrav)
-        fetch("https://better-putt-web-app-server.onrender.com/api/me", {headers})
+        fetch(`${import.meta.env.VITE_API_URL}/api/me`, {headers})
+        // fetch("https://127.0.0.1:8000/api/me", {headers})
             .then(res => res.ok ? res.json() : Promise.reject())
             .then(data => {
                 setUser(data);
@@ -39,7 +40,8 @@ export default function Hero() {
             .catch(() => setIsLoggedIn(false));
 
         // 2. Načtení statistik (pro horní boxy)
-        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {headers})
+        fetch(`${import.meta.env.VITE_API_URL}/api/statistics`, {headers})
+        // fetch("https://127.0.0.1:8000/api/statistics", {headers})
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data) {
@@ -49,7 +51,8 @@ export default function Hero() {
             });
 
         // 3. Načtení historie (pro seznam aktivit)
-        fetch("https://better-putt-web-app-server.onrender.com/api/games", {headers})
+        fetch(`${import.meta.env.VITE_API_URL}/api/games`, {headers})
+        // fetch("https://127.0.0.1:8000/api/games", {headers})
             .then(res => res.ok ? res.json() : [])
             .then(data => {
                 setGames(data);

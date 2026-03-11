@@ -14,7 +14,8 @@ export default function Login() {
     setError('');
 
     // Použití centrální adresy
-    const API_URL = `https://better-putt-web-app-server.onrender.com/api/gate`;
+    // const API_URL = `https://better-putt-web-app-server.onrender.com/api/gate`;
+    const API_URL = `${import.meta.env.VITE_API_URL}/api/gate`;
 
     try {
         const formData = new URLSearchParams();
@@ -46,10 +47,6 @@ export default function Login() {
 // Pomocná funkce, aby se kód neopakoval
     const processLogin = (data: any) => {
         localStorage.setItem('token', data.access_token);
-
-        // TADY JE TA DŮLEŽITÁ ČÁST PRO CACHE:
-        // Po přihlášení MUSÍME smazat starou cache, jinak uvidíš data
-        // předchozího uživatele nebo staré nesmysly.
         localStorage.removeItem('cache_user');
         localStorage.removeItem('cache_stats');
         localStorage.removeItem('cache_games');

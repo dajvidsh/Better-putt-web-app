@@ -90,7 +90,7 @@ export default function Survival() {
     };
 
     const handleReset = () => {
-        if (confirm("Opravdu chceš restartovat hru?")) {
+        // if (confirm("Opravdu chceš restartovat hru?")) {
             localStorage.removeItem('active_survival_game');
             setGameState({
                 lives: 1,
@@ -101,7 +101,7 @@ export default function Survival() {
                 history: [],
                 phase: false
             });
-        }
+        // }
     };
 
     const saveGameToDb = async (finalHistory: any[], finalDistance: number, finalSum: number) => {

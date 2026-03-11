@@ -15,11 +15,12 @@ export default function Register() {
         setError('');
 
         try {
-            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/join", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({email, password, username}),
-            });
+            // const response = await fetch("https://better-putt-web-app-server.onrender.com/api/join", {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/join`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({email, password, username}),
+                })
 
             if (response.ok) {
                 // TADY: Ujisti se, že naviguješ na pevnou adresu jako řetězec

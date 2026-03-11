@@ -28,7 +28,7 @@ export default function Profile() {
         const headers = {"Authorization": `Bearer ${token}`};
 
         // 2. Refresh uživatele
-        fetch("/api/me", {headers})
+        fetch(`${import.meta.env.VITE_API_URL}/api/me`, {headers})
             .then(res => {
                 if (res.status === 401) {
                     localStorage.clear();
@@ -48,7 +48,7 @@ export default function Profile() {
             });
 
         // 3. Refresh statistik na pozadí
-        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {headers})
+        fetch(`${import.meta.env.VITE_API_URL}/api/statistics`, {headers})
             .then(res => res.json())
             .then(data => {
                 setStats(data);
@@ -75,7 +75,8 @@ export default function Profile() {
         <div className="px-6 pb-24 pt-8 bg-white overflow-y-auto">
             {/* Profile Header */}
             <div className="py-8 text-center border-b border-gray-100">
-                <div className="size-20 bg-black rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-light shadow-lg">
+                <div
+                    className="size-20 bg-black rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-light shadow-lg">
                     {user?.username?.charAt(0).toUpperCase() || "?"}
                 </div>
                 <h1 className="text-xl font-normal mb-1">{user?.username}</h1>
@@ -101,15 +102,18 @@ export default function Profile() {
             <div className="py-6 border-b border-gray-100">
                 <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Úspěchy</h2>
                 <div className="flex gap-3">
-                    <div className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.total_trainings >= 50) ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
+                    <div
+                        className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.total_trainings >= 50) ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
                         <Target className="size-6 mx-auto mb-2 text-gray-800" strokeWidth={1.5}/>
                         <p className="text-[10px] font-medium text-gray-600">50 TRÉNINKŮ</p>
                     </div>
-                    <div className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.total_putts >= 1000) ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
+                    <div
+                        className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.total_putts >= 1000) ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
                         <TrendingUp className="size-6 mx-auto mb-2 text-gray-800" strokeWidth={1.5}/>
                         <p className="text-[10px] font-medium text-gray-600">1000 PUTTŮ</p>
                     </div>
-                    <div className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.rank <= 3 && stats?.overview?.rank !== "-") ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
+                    <div
+                        className={`flex-1 border rounded-xl p-4 text-center transition-all bg-white shadow-sm ${(stats?.overview?.rank <= 3 && stats?.overview?.rank !== "-") ? 'border-green-100' : 'border-gray-100 opacity-50'}`}>
                         <Award className="size-6 mx-auto mb-2 text-gray-800" strokeWidth={1.5}/>
                         <p className="text-[10px] font-medium text-gray-600">TOP 3</p>
                     </div>
