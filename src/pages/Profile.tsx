@@ -48,7 +48,7 @@ export default function Profile() {
             });
 
         // 3. Refresh statistik na pozadí
-        fetch("/api/statistics", {headers})
+        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {headers})
             .then(res => res.json())
             .then(data => {
                 setStats(data);

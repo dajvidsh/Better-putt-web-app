@@ -17,10 +17,15 @@ models.Base.metadata.create_all(bind=engine)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/gate")
 app = FastAPI(title="Better Putt API")
 
-# Nastavení CORS (jako minule)
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://better-putt-web-app-server.onrender.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://better-putt-web-app.onrender.com"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

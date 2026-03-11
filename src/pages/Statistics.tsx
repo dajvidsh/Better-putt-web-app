@@ -17,7 +17,7 @@ export default function Statistics() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        fetch("/api/statistics", {
+        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", {
             headers: { "Authorization": `Bearer ${token}` }
         })
         .then(res => res.json())
