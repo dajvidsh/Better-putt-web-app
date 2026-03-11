@@ -10,35 +10,67 @@ export default function Login() {
     const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    e.preventDefault();
+    setError('');
 
-        // FastAPI očekává form-data (OAuth2 standard)
-        const formData = new URLSearchParams();
-        formData.append('username', email); // OAuth2 používá 'username' pro login field
-        formData.append('password', password);
+    // 1. Zkusíme poslat klasické JSON (často bývá stabilnější, pokud nemáš striktní OAuth2)
+    // Pokud tvůj backend vyžaduje Form Data, nech tam ten URLSearchParams kód.
+    try {
+        const response = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json" // Zkus nejdřív JSON
+            },
+            body: JSON.stringify({
+                username: email, // FastAPI často chce email v poli 'username'
+                password: password
+            }),
+        });
 
-        try {
-            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
+        // 2. Pokud JSON neprojde (vyskočí 422), zkusíme okamžitě Form Data
+        if (response.status === 422 || !response.ok) {
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', password);
+
+            const formResponse = await fetch("https://better-putt-web-app-server.onrender.com/api/gate", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData,
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                // Uložíme token do prohlížeče
-                localStorage.setItem('token', data.access_token);
-                navigate('/'); // Přesměrování na hlavní stránku
-            } else {
-                // Pokud server vrátí chybu (např. 401 Unauthorized)
-                const errorData = await response.json();
-                setError(errorData.detail || 'Nesprávné údaje nebo chyba serveru.');
+            if (formResponse.ok) {
+                const data = await formResponse.json();
+                processLogin(data);
+                return;
             }
-        } catch (err) {
-            setError('Nelze se spojit se serverem. Zkontrolujte, zda běží backend.');
         }
-    };
+
+        if (response.ok) {
+            const data = await response.json();
+            processLogin(data);
+        } else {
+            const errorData = await response.json().catch(() => ({ detail: 'Chyba serveru' }));
+            setError(errorData.detail || 'Nesprávné údaje.');
+        }
+    } catch (err) {
+        setError('Nelze se spojit se serverem.');
+    }
+};
+
+// Pomocná funkce, aby se kód neopakoval
+const processLogin = (data: any) => {
+    localStorage.setItem('token', data.access_token);
+
+    // TADY JE TA DŮLEŽITÁ ČÁST PRO CACHE:
+    // Po přihlášení MUSÍME smazat starou cache, jinak uvidíš data
+    // předchozího uživatele nebo staré nesmysly.
+    localStorage.removeItem('cache_user');
+    localStorage.removeItem('cache_stats');
+    localStorage.removeItem('cache_games');
+
+    navigate('/');
+};
 
     return (
         <div className="size-full bg-white flex flex-col pb-10">

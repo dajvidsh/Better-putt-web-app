@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://better-putt-web-app-server.onrender.com',
         changeOrigin: true,
         secure: false,
       }
