@@ -20,7 +20,7 @@ app = FastAPI(title="Better Putt API")
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://better-putt-web-app-server.onrender.com",
+    "https://better-putt-web-app.onrender.com",
 ]
 
 app.add_middleware(
