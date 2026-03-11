@@ -1,31 +1,42 @@
 import {useNavigate} from 'react-router';
-import {AlertTriangle, Check, RotateCcw, Zap} from 'lucide-react';
-import {useState} from 'react';
+import {AlertTriangle, ArrowLeft, Check, RotateCcw, Zap} from 'lucide-react';
+import {useState, useEffect} from 'react';
 
 export default function Survival() {
     const navigate = useNavigate();
-    const [lives, setLives] = useState(1);
-    const [beenHere, setBeenHere] = useState(false);
-    const [phase, setPhase] = useState(false);
-    const [sumOfPutts, setSumOfPutts] = useState(0);
-    const [distance, setDistance] = useState(3);
-    const [round, setRound] = useState(1);
 
-    const [history, setHistory] = useState<{
-        lives: number,
-        distance: number,
-        beenHere: boolean,
-        sumOfPutts: number,
-        makes: number
-    }[]>([]);
+    // 1. Inicializace stavu - zkusíme načíst z cache, jinak default
+    const [gameState, setGameState] = useState(() => {
+        const saved = localStorage.getItem('active_survival_game');
+        if (saved) return JSON.parse(saved);
+        return {
+            lives: 1,
+            distance: 3,
+            round: 1,
+            sumOfPutts: 0,
+            beenHere: false,
+            history: [],
+            phase: false
+        };
+    });
+
+    // Destrukturalizace pro snadnější práci v kódu (při zachování funkčnosti tvé logiky)
+    const { lives, distance, round, sumOfPutts, beenHere, history, phase } = gameState;
+
+    // 2. Kdykoliv se gameState změní, uložíme ho do localStorage
+    useEffect(() => {
+        localStorage.setItem('active_survival_game', JSON.stringify(gameState));
+    }, [gameState]);
+
+    // Pomocná funkce pro update stavu (zkracuje zápis)
+    const updateGame = (updates: Partial<typeof gameState>) => {
+        setGameState((prev: any) => ({ ...prev, ...updates }));
+    };
 
     function handleSuccess(amountOfPutts: number) {
         const updatedHistory = [...history, {lives, distance, beenHere, sumOfPutts, makes: amountOfPutts}];
-        setHistory(updatedHistory);
 
-        const newSum = sumOfPutts + amountOfPutts;
-        setSumOfPutts(newSum);
-
+        let newSum = sumOfPutts + amountOfPutts;
         let newLives = lives;
         let newDistance = distance;
         let newBeenHere = beenHere;
@@ -37,7 +48,6 @@ export default function Survival() {
             newLives -= 1;
             newBeenHere = true;
             if (newLives === 0) isGameOver = true;
-
         } else if (amountOfPutts === 3) {
             if (!beenHere) newLives += 1;
             newDistance += 1;
@@ -46,54 +56,62 @@ export default function Survival() {
             newBeenHere = true;
         }
 
-        setLives(newLives);
-        setDistance(newDistance);
-        setBeenHere(newBeenHere);
-        setRound(prev => prev + 1);
-
         if (isGameOver) {
             handleFinish(updatedHistory, distance, newSum);
+        } else {
+            updateGame({
+                lives: newLives,
+                distance: newDistance,
+                beenHere: newBeenHere,
+                round: round + 1,
+                sumOfPutts: newSum,
+                history: updatedHistory
+            });
         }
     }
 
     const handleBack = () => {
         if (history.length === 0) return;
-        const previousState = history[history.length - 1];
+        const prev = history[history.length - 1];
 
-        setLives(previousState.lives);
-        setDistance(previousState.distance);
-        setRound(prev => prev - 1);
-        setBeenHere(previousState.beenHere);
-        setSumOfPutts(previousState.sumOfPutts);
-
-        setHistory(prev => prev.slice(0, -1));
+        updateGame({
+            lives: prev.lives,
+            distance: prev.distance,
+            round: round - 1,
+            beenHere: prev.beenHere,
+            sumOfPutts: prev.sumOfPutts,
+            history: history.slice(0, -1)
+        });
     };
 
-    const handleFinish = (finalHistory: typeof history, finalDistance: number, finalSum: number) => {
-        setPhase(true);
+    const handleFinish = (finalHistory: any[], finalDistance: number, finalSum: number) => {
+        updateGame({ phase: true, history: finalHistory, distance: finalDistance, sumOfPutts: finalSum });
         saveGameToDb(finalHistory, finalDistance, finalSum);
     };
 
     const handleReset = () => {
-        setLives(1);
-        setDistance(3);
-        setRound(1);
-        setHistory([]);
-        setSumOfPutts(0)
+        if (confirm("Opravdu chceš restartovat hru?")) {
+            localStorage.removeItem('active_survival_game');
+            setGameState({
+                lives: 1,
+                distance: 3,
+                round: 1,
+                sumOfPutts: 0,
+                beenHere: false,
+                history: [],
+                phase: false
+            });
+        }
     };
 
-    const saveGameToDb = async (finalHistory: typeof history, finalDistance: number, finalSum: number) => {
+    const saveGameToDb = async (finalHistory: any[], finalDistance: number, finalSum: number) => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            console.error("Uživatel není přihlášen, hru nelze uložit.");
-            return;
-        }
+        if (!token) return;
 
         const totalAttempts = finalHistory.length * 3;
-
         const trainingData = {
             game_mode_id: "survival",
-            total_score: finalDistance, // Skóre v Survivalu = nejvyšší dosažená vzdálenost
+            total_score: finalDistance,
             total_makes: finalSum,
             total_attempts: totalAttempts,
             rounds: finalHistory.map((h, index) => ({
@@ -106,7 +124,6 @@ export default function Survival() {
         };
 
         try {
-            // const response = await fetch("http://localhost:8000/api/trainings/save", {
             const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
                 method: "POST",
                 headers: {
@@ -117,130 +134,83 @@ export default function Survival() {
             });
 
             if (response.ok) {
-                console.log("Paráda! Survival uložen.");
-            } else {
-                console.error("Chyba při ukládání.");
+                // Po úspěšném uložení smažeme rozdělanou hru z cache
+                localStorage.removeItem('active_survival_game');
+                localStorage.removeItem('cache_stats');
+                localStorage.removeItem('cache_games');
+                navigate('/');
             }
         } catch (error) {
-            console.error("Nelze se spojit se serverem:", error);
+            console.error("Chyba při ukládání:", error);
         }
     };
 
     const gameName = 'Survival';
 
     return (
-        <div className="size-full bg-white overflow-auto flex flex-col pt-10 pb-20">
+        <div className="size-full bg-white overflow-auto flex flex-col pb-20">
 
+            <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
+                <div className="flex items-center gap-4 px-6 py-4">
+                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 active:opacity-50 transition-opacity">
+                        <ArrowLeft className="size-5"/>
+                    </button>
+                    <h1 className="text-sm font-normal tracking-wide">DETAIL HRY</h1>
+                </div>
+            </div>
             {!phase && (
-
                 <div className="flex-1 flex flex-col px-6">
-                    {/* Game Info */}
                     <div className="text-center py-4">
                         <h2 className="text-xl font-light mb-2">{gameName}</h2>
                         <p className="text-gray-500">Kolo {round}</p>
                     </div>
 
-                    {/* Vzdalenost */}
                     <div className="flex-1 flex flex-col items-center justify-center py-0 pb-10">
                         <div className="flex gap-4 w-full mb-8">
-                            <div
-                                className="flex-1 border border-gray-200 bg-gray-50 rounded-lg py-6 text-center flex flex-col items-center justify-center">
+                            <div className="flex-1 border border-gray-200 bg-gray-50 rounded-lg py-6 text-center">
                                 <div className="flex items-baseline justify-center mb-1">
-                                    <span className="text-5xl font-light text-black">{distance}</span>
-                                    <span className="text-xl font-light text-gray-400 ml-1">m</span>
+                                    <span className="text-5xl font-light">{distance}</span>
+                                    <span className="text-xl text-gray-400 ml-1">m</span>
                                 </div>
                                 <p className="text-xs text-gray-400">Vzdálenost</p>
                             </div>
-
-                            {/* Skóre */}
-                            <div
-                                className="flex-1 border border-gray-200 bg-gray-50 rounded-lg py-6 text-center flex flex-col items-center justify-center">
+                            <div className="flex-1 border border-gray-200 bg-gray-50 rounded-lg py-6 text-center">
                                 <p className="text-5xl font-light mb-1">{lives}</p>
-                                <p className="text-xs text-gray-400">
-                                    {lives === 1 ? "Život" : lives <= 4 ? "Životy" : "Životů"}
-                                </p>
+                                <p className="text-xs text-gray-400">{lives === 1 ? "Život" : "Životy"}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Controls */}
                     <div className="pb-8 space-y-3">
-                        <>
-                            <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3">
+                            {[0, 1, 2, 3].map((num) => (
                                 <button
-                                    onClick={() => handleSuccess(0)}
-                                    className="text-2xl py-5 border text-red-500 border-red-500 bg-red-50/30 active:bg-red-50"
+                                    key={num}
+                                    onClick={() => handleSuccess(num)}
+                                    className={`text-2xl py-5 border active:opacity-50 transition-all ${
+                                        num === 0 ? 'text-red-500 border-red-500 bg-red-50/10' :
+                                        num === 1 ? 'text-orange-400 border-orange-500 bg-orange-50/10' :
+                                        num === 2 ? 'text-gray-400 border-gray-500' :
+                                        'text-lime-500 border-lime-500 bg-lime-50/10'
+                                    }`}
                                 >
-                                    0
+                                    {num === 1 && lives === 1 && round !== 1 ? <AlertTriangle className="size-8 mx-auto"/> :
+                                     num === 3 && !beenHere && round !== 1 ? <Zap className="size-8 mx-auto"/> : num}
                                 </button>
-                                <button
-                                    onClick={() => handleSuccess(1)}
-                                    className="flex items-center justify-center text-2xl py-5 border text-orange-400 border-orange-500 bg-orange-50/30 active:bg-orange-50"
-                                >
-                                    {lives === 1 && round !== 1 ?
-                                        <AlertTriangle className="size-8" strokeWidth={1.5}/> : "1"}
-                                </button>
-                                <button
-                                    onClick={() => handleSuccess(2)}
-                                    className="text-2xl py-5 border text-gray-400 border-gray-500 bg-gray-50/30 active:bg-gray-50"
-                                >
-                                    2
-                                </button>
-                                <button
-                                    onClick={() => handleSuccess(3)}
-                                    className="flex items-center justify-center text-2xl py-5 border text-lime-500 border-lime-500 bg-lime-50/30 active:bg-lime-50"
-                                >
-                                    {!beenHere && round !== 1 ? <Zap className="size-8" strokeWidth={1.5}/> : "3"}
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={handleBack}
-                                disabled={history.length === 0}
-                                className={`w-full py-4 border border-gray-400 flex items-center justify-center gap-2 transition-colors ${
-                                    history.length === 0
-                                        ? 'opacity-40 cursor-not-allowed bg-gray-50'
-                                        : 'active:bg-gray-50'
-                                }`}
-                            >
-                                Zpět
-                            </button>
-
-                            <button
-                                onClick={handleReset}
-                                className="w-full py-4 text-gray-500 flex items-center justify-center gap-2 active:opacity-50 transition-opacity"
-                            >
-                                <RotateCcw className="size-4"/>
-                                Reset
-                            </button>
-                        </>
+                            ))}
+                        </div>
+                        <button onClick={handleBack} disabled={history.length === 0} className="w-full py-4 border border-gray-400 disabled:opacity-30">Zpět</button>
+                        <button onClick={handleReset} className="w-full py-4 text-gray-400 flex items-center justify-center gap-2"><RotateCcw className="size-4"/> Reset</button>
                     </div>
                 </div>
             )}
-            {/* --- HOTOVO --- */}
+
             {phase && (
-                <div className="flex-1 flex flex-col items-center justify-center px-6 text-center pt-10">
-                    <div
-                        className="size-15 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6">
-                        <Check className="size-10"/>
-                    </div>
-                    <h2 className="text-3xl font-light mb-2">Survival Dokončen</h2>
-                    <p className="text-gray-500 mb-1">Odházeno {history.length * 3} puttů.</p>
-                    <p className="text-gray-500 mb-12">Úspěšnost {Math.round((sumOfPutts / (history.length * 3)) * 100)}%.</p>
-
-                    <div
-                        className="border border-gray-200 bg-gray-50 rounded-lg py-8 px-12 text-center w-full max-w-sm mb-12">
-                        <p className="text-5xl font-light mb-2">{distance}<span
-                            className="text-3xl text-gray-400">m</span></p>
-                        <p className="text-sm text-gray-400 uppercase tracking-widest">Konečná vzdálenost</p>
-                    </div>
-
-                    <button
-                        onClick={() => navigate('/training')}
-                        className="flex justify-center gap-2 mt-8 w-full bg-black text-white py-4 active:opacity-70 transition-opacity"
-                    >
-                        Zpět na tréninky
-                    </button>
+                <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+                    <div className="size-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6"><Check className="size-10"/></div>
+                    <h2 className="text-3xl font-light mb-2">Dokončeno</h2>
+                    <p className="text-gray-500 mb-8">Nejlepší vzdálenost: {distance}m</p>
+                    <button onClick={() => { localStorage.removeItem('active_survival_game'); navigate('/training'); }} className="w-full bg-black text-white py-4">Zpět na tréninky</button>
                 </div>
             )}
         </div>

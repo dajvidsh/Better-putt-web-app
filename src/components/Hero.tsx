@@ -1,65 +1,77 @@
-import { BarChart3, Clock, Target, TrendingUp, Users, History } from "lucide-react";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import {BarChart3, Clock, Target, TrendingUp, Users, History} from "lucide-react";
+import {useNavigate} from "react-router";
+import {useEffect, useState} from "react";
 
 export default function Hero() {
     const navigate = useNavigate();
 
     // Stavy pro data
-    const [games, setGames] = useState<any[]>([]);
-    const [user, setUser] = useState<any>(null); // Data z /api/me
-    const [stats, setStats] = useState<any>(null); // Data z /api/statistics
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [games, setGames] = useState<any[]>(() => {
+        const saved = localStorage.getItem('cache_games');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [user, setUser] = useState<any>(() => {
+        const saved = localStorage.getItem('cache_user');
+        return saved ? JSON.parse(saved) : null;
+    }); // Data z /api/me
+    const [stats, setStats] = useState<any>(() => {
+        const saved = localStorage.getItem('cache_stats');
+        return saved ? JSON.parse(saved) : null;
+    }); // Data z /api/statistics
+    const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'));
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-
         if (!token) {
             setIsLoggedIn(false);
             return;
         }
 
-        setIsLoggedIn(true);
-        const headers = { "Authorization": `Bearer ${token}` };
+        const headers = {"Authorization": `Bearer ${token}`};
 
         // 1. Načtení info o uživateli (pro pozdrav)
-        fetch("https://better-putt-web-app-server.onrender.com/api/me", { headers })
+        fetch("/api/me", {headers})
             .then(res => res.ok ? res.json() : Promise.reject())
-            .then(data => setUser(data))
+            .then(data => {
+                setUser(data);
+                localStorage.setItem('cache_user', JSON.stringify(data));
+            })
             .catch(() => setIsLoggedIn(false));
 
         // 2. Načtení statistik (pro horní boxy)
-        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", { headers })
+        fetch("/api/statistics", {headers})
             .then(res => res.ok ? res.json() : null)
-            .then(data => setStats(data))
-            .catch(err => console.error("Chyba statistik:", err));
+            .then(data => {
+                if (data) {
+                    setStats(data);
+                    localStorage.setItem('cache_stats', JSON.stringify(data));
+                }
+            });
 
         // 3. Načtení historie (pro seznam aktivit)
-        fetch("https://better-putt-web-app-server.onrender.com/api/games", { headers })
+        fetch("/api/games", {headers})
             .then(res => res.ok ? res.json() : [])
-            .then(data => setGames(data))
-            .catch(err => console.error("Chyba her:", err));
+            .then(data => {
+                setGames(data);
+                localStorage.setItem('cache_games', JSON.stringify(data));
+            });
 
-    }, [navigate]);
+    }, []);
 
     // Funkce pro bezpečné přesměrování
     const protectedNavigate = (path: string) => {
-        if (!isLoggedIn) {
-            navigate('/login');
-        } else {
-            navigate(path);
-        }
+        isLoggedIn ? navigate(path) : navigate('/login');
     };
 
     return (
         <div className="px-6 pb-20">
             {/* Hero Header */}
             <div className="py-8">
-                <h1 className="text-2xl font-light mb-2">
-                    {isLoggedIn && user ? `Vítej zpět, ${user.username}` : "Vítej v Better Putt"}
+                <h1 className="text-2xl font-normal tracking-tight text-black">
+                    BETTER PUTT
                 </h1>
-                <p className="text-gray-500 text-sm">
-                    {isLoggedIn ? "Pokračuj ve svém tréninku" : "Zlepši své puttování ještě dnes"}
+                <p className="text-sm text-gray-400 font-medium tracking-wider mt-1">
+                    {isLoggedIn && user ? `${user.username}` : "Vítej v tréninku"}
                 </p>
             </div>
 
@@ -112,13 +124,15 @@ export default function Hero() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Poslední aktivity</h2>
                     {isLoggedIn && (
-                        <button onClick={() => navigate(`/history`)} className="text-xs font-bold text-black border-b border-black">VŠE</button>
+                        <button onClick={() => navigate(`/history`)}
+                                className="text-xs font-bold text-black border-b border-black">VŠE</button>
                     )}
                 </div>
 
                 <div className="space-y-1">
                     {!isLoggedIn ? (
-                        <div className="py-10 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+                        <div
+                            className="py-10 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
                             <p className="text-sm text-gray-400 mb-3">Pro zobrazení tvých her se přihlas</p>
                             <button
                                 onClick={() => navigate('/login')}
@@ -150,7 +164,8 @@ export default function Hero() {
                             </button>
                         ))
                     ) : (
-                        <p className="text-center text-gray-400 py-10 text-sm italic">Zatím jsi neodehrál žádnou hru.</p>
+                        <p className="text-center text-gray-400 py-10 text-sm italic">Zatím jsi neodehrál žádnou
+                            hru.</p>
                     )}
                 </div>
 

@@ -4,33 +4,38 @@ import {useState, useEffect} from 'react';
 
 export default function Statistics() {
     const navigate = useNavigate();
-    const [stats, setStats] = useState<any>(null);
-    // const [isLoading, setIsLoading] = useState(true);
+
+    // 1. Získáme cache hned na začátku mimo state pro okamžitý přístup
+    const getCachedData = () => {
+        const saved = localStorage.getItem('cache_stats');
+        return saved ? JSON.parse(saved) : null;
+    };
+
+    const [stats, setStats] = useState<any>(getCachedData);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        if (!token) return;
 
-        if (!token) {
-            return;
-        }
-        const headers = { "Authorization": `Bearer ${token}` };
-        fetch("https://better-putt-web-app-server.onrender.com/api/statistics", { headers }).then(res => res.json()).then(setStats);
-        // const fetchStats = async () => {
-        //     try {
-        //         const response = await fetch("https://better-putt-web-app-server.onrender.com/api/statistics");
-        //         if (response.ok) {
-        //             const data = await response.json();
-        //             setStats(data);
-        //         }
-        //     } catch (error) {
-        //         console.error("Chyba při stahování statistik:", error);
-        //     } finally {
-        //         setIsLoading(false);
-        //     }
-        // };
-
-        // fetchStats();
+        fetch("/api/statistics", {
+            headers: { "Authorization": `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            setStats(data);
+            localStorage.setItem('cache_stats', JSON.stringify(data));
+        });
     }, []);
+
+    // 2. Definujeme overview tak, aby prioritně bral data, která už v stats JSOU
+    // Pokud stats existují (i z cache), overview nebude prázdné
+    const overview = stats?.overview || {
+        total_score: 0,
+        total_trainings: 0,
+        total_putts: 0,
+        rank: "-",
+        total_time_hours: "0h"
+    };
 
     // Fiktivní data pro grafy (na ty se vrhneme později)
     // const progressData = [
@@ -57,13 +62,6 @@ export default function Statistics() {
     //     );
     // }
 
-    const overview = stats?.overview || {
-        total_score: 0,
-        total_trainings: 0,
-        total_putts: 0,
-        rank: "-",
-        total_time_hours: "0h"
-    };
     const gameStats = stats?.gameStats || [];
 
     return (
