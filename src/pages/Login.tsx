@@ -10,31 +10,38 @@ export default function Login() {
     const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    e.preventDefault();
+    setError('');
 
-        try {
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', password);
+    // Vytvoříme adresu podle toho, jestli jsme doma nebo na Renderu
+    const API_URL = window.location.hostname === 'localhost'
+        ? '/api/gate'
+        : 'https://better-putt-web-app-server.onrender.com/api/gate';
 
-            // Použij buď plnou URL nebo relativní, ale konzistentně!
-            const response = await fetch("/api/gate", {
-                method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: formData,
-            });
+    try {
+        const formData = new URLSearchParams();
+        formData.append('username', email);
+        formData.append('password', password);
 
-            if (response.ok) {
-                const data = await response.json();
-                processLogin(data);
-            } else {
-                setError('Nesprávné údaje.');
-            }
-        } catch (err) {
-            setError('Nelze se spojit se serverem.');
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData,
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Tady proběhne uložení tokenu a navigace
+            processLogin(data);
+        } else {
+            const errorData = await response.json().catch(() => ({ detail: 'Chyba přihlášení' }));
+            setError(errorData.detail || 'Nesprávné údaje.');
         }
-    };
+    } catch (err) {
+        // Sem to spadne, když backend vůbec neodpoví nebo je špatná URL
+        setError('Nelze se spojit se serverem.');
+    }
+};
 
 // Pomocná funkce, aby se kód neopakoval
     const processLogin = (data: any) => {
