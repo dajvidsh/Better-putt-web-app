@@ -13,10 +13,16 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
-    // Vytvoříme adresu podle toho, jestli jsme doma nebo na Renderu
-    const API_URL = window.location.hostname === 'localhost'
+    // Vylepšená detekce adresy: kontroluje localhost i 127.0.0.1
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    // Pokud jste na Renderu (vaše-app.onrender.com), používejte relativní cestu '/api/gate'
+    // Pokud jste doma, zkuste buď proxy nebo přímou adresu
+    const API_URL = isLocal
         ? '/api/gate'
         : 'https://better-putt-web-app-server.onrender.com/api/gate';
+
+    console.log("Pokus o přihlášení na:", API_URL);
 
     try {
         const formData = new URLSearchParams();
@@ -25,24 +31,28 @@ export default function Login() {
 
         const response = await fetch(API_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
             body: formData,
         });
 
         if (response.ok) {
             const data = await response.json();
-            // Tady proběhne uložení tokenu a navigace
+            console.log("Přihlášení úspěšné");
             processLogin(data);
         } else {
-            const errorData = await response.json().catch(() => ({ detail: 'Chyba přihlášení' }));
+            // Zde zpracujeme chyby typu 401 (špatné heslo) nebo 422 (špatný formát)
+            const errorData = await response.json().catch(() => ({ detail: 'Chyba formátu odpovědi' }));
+            console.error("Chyba serveru:", errorData);
             setError(errorData.detail || 'Nesprávné údaje.');
         }
     } catch (err) {
-        // Sem to spadne, když backend vůbec neodpoví nebo je špatná URL
-        setError('Nelze se spojit se serverem.');
+        // Tady se vypíše skutečná chyba do konzole (F12 -> Console)
+        console.error("Síťová chyba (fetch failed):", err);
+        setError('Nelze se spojit se serverem. Zkontrolujte připojení.');
     }
 };
-
 // Pomocná funkce, aby se kód neopakoval
     const processLogin = (data: any) => {
         localStorage.setItem('token', data.access_token);
