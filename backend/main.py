@@ -14,7 +14,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 # Tento řádek automaticky vytvoří tabulky v Neon DB podle souboru models.py
 models.Base.metadata.create_all(bind=engine)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/gate")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/gate")
 app = FastAPI(title="Better Putt API")
 
 # Nastavení CORS (jako minule)
