@@ -2,22 +2,28 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid,
-    Tooltip, ResponsiveContainer, Cell,
+    LineChart, Line, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const modeUnit: Record<string, string> = {
-    DRILL: "%",
-    SURVIVAL: "m",
-    JYLY: "pts",
+    drill: "%",
+    survival: "m",
+    jyly: "pts",
 };
 
 const modeBadgeClass: Record<string, string> = {
-    JYLY: "bg-gray-100 text-gray-500",
-    SURVIVAL: "bg-orange-50 text-orange-400",
-    DRILL: "bg-blue-50 text-blue-400",
+    jyly: "bg-gray-100 text-gray-500",
+    survival: "bg-orange-50 text-orange-400",
+    drill: "bg-blue-50 text-blue-400",
+};
+
+const modeLabel: Record<string, string> = {
+    jyly: "JYLY",
+    survival: "SURVIVAL",
+    drill: "DRILL",
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -41,6 +47,43 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     );
 }
 
+function GameTooltip({ active, payload, unit, onNavigate }: {
+    active?: boolean;
+    payload?: any[];
+    unit: string;
+    onNavigate: (id: number) => void;
+}) {
+    if (!active || !payload?.length) return null;
+    const g = payload[0].payload;
+    return (
+        <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-sm text-xs min-w-[120px]">
+            <p className="text-gray-400 mb-1">{g.date}</p>
+            <p className="font-medium text-gray-900 mb-2">
+                {g.score}
+                <span className="text-gray-400 ml-0.5 font-normal">{unit}</span>
+            </p>
+            <button
+                onClick={() => onNavigate(g.id)}
+                className="text-[10px] uppercase tracking-wide font-medium text-black border-b border-black pb-0.5"
+            >
+                Detail →
+            </button>
+        </div>
+    );
+}
+
+function ClickableDot(props: any) {
+    const { cx, cy, payload, onNavigate } = props;
+    return (
+        <circle
+            cx={cx} cy={cy} r={5}
+            fill="#111827" stroke="white" strokeWidth={2}
+            style={{ cursor: "pointer" }}
+            onClick={() => onNavigate(payload.id)}
+        />
+    );
+}
+
 export default function Statistics() {
     const navigate = useNavigate();
 
@@ -48,34 +91,47 @@ export default function Statistics() {
         const saved = localStorage.getItem("cache_stats");
         return saved ? JSON.parse(saved) : null;
     });
+    const [games, setGames] = useState<any[]>(() => {
+        const saved = localStorage.getItem("cache_games");
+        return saved ? JSON.parse(saved) : [];
+    });
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) return;
+        const headers = { Authorization: `Bearer ${token}` };
 
-        fetch(`${API_BASE_URL}/api/statistics`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        fetch(`${API_BASE_URL}/api/statistics`, { headers })
             .then((res) => res.json())
-            .then((data) => {
-                setStats(data);
-                localStorage.setItem("cache_stats", JSON.stringify(data));
-            });
+            .then((data) => { setStats(data); localStorage.setItem("cache_stats", JSON.stringify(data)); });
+
+        fetch(`${API_BASE_URL}/api/games`, { headers })
+            .then((res) => (res.ok ? res.json() : []))
+            .then((data) => { setGames(data); localStorage.setItem("cache_games", JSON.stringify(data)); });
     }, []);
 
     const overview = stats?.overview ?? {
-        total_score: 0,
-        total_trainings: 0,
-        total_putts: 0,
-        rank: "-",
-        total_time_hours: "0h",
+        total_trainings: 0, total_putts: 0, rank: "-", total_time_hours: "0h",
     };
-
     const gameStats: any[] = stats?.gameStats ?? [];
+
+    // Skupiny her dle módu — nejstarší první pro chart
+    const gamesByMode: Record<string, any[]> = {};
+    for (const g of [...games].reverse()) {
+        const mode = g.game_mode_id;
+        if (!gamesByMode[mode]) gamesByMode[mode] = [];
+        gamesByMode[mode].push({
+            id: g.id,
+            date: g.date,
+            score: g.total_score,
+            index: gamesByMode[mode].length + 1,
+        });
+    }
+
+    const handleNavigate = (id: number) => navigate(`/history/${id}`);
 
     return (
         <div className="size-full bg-white overflow-auto">
-            {/* Header */}
             <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 z-50">
                 <div className="flex items-center gap-4 px-6 py-4">
                     <button
@@ -84,9 +140,7 @@ export default function Statistics() {
                     >
                         <ArrowLeft className="size-5 text-gray-700" />
                     </button>
-                    <h1 className="text-sm font-medium tracking-widest text-gray-900">
-                        STATISTIKY
-                    </h1>
+                    <h1 className="text-sm font-medium tracking-widest text-gray-900">STATISTIKY</h1>
                 </div>
             </div>
 
@@ -103,107 +157,145 @@ export default function Statistics() {
                     </div>
                 </section>
 
-                {/* Statistiky her */}
-                <section>
-                    <SectionLabel>Dle módu</SectionLabel>
-
-                    {gameStats.length === 0 ? (
+                {gameStats.length === 0 ? (
+                    <section>
+                        <SectionLabel>Dle módu</SectionLabel>
                         <div className="flex flex-col items-center justify-center py-12 gap-2">
                             <p className="text-sm text-gray-400">Zatím nemáš žádné tréninky</p>
                             <p className="text-xs text-gray-300">Po první hře se tu objeví tvoje statistiky</p>
                         </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {gameStats.map((game: any) => {
-                                const unit = modeUnit[game.name] ?? "";
-                                const badge = modeBadgeClass[game.name] ?? "bg-gray-100 text-gray-500";
+                    </section>
+                ) : (
+                    gameStats.map((game: any) => {
+                        const modeId = game.name.toLowerCase();
+                        const unit = modeUnit[modeId] ?? "";
+                        const badge = modeBadgeClass[modeId] ?? "bg-gray-100 text-gray-500";
+                        const modeGames = gamesByMode[modeId] ?? [];
 
-                                // Bar chart data: průměr vs nejlepší
-                                const barData = [
-                                    { label: "Průměr", value: game.avgScore },
-                                    { label: "Nejlepší", value: game.bestScore },
-                                ];
+                        return (
+                            <section key={game.name}>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wide ${badge}`}>
+                                        {modeLabel[modeId] ?? game.name}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                        {game.attempts} {game.attempts === 1 ? "hra" : game.attempts <= 4 ? "hry" : "her"}
+                                    </span>
+                                </div>
 
-                                return (
-                                    <div
-                                        key={game.name}
-                                        className="border border-gray-100 rounded-2xl p-5"
-                                    >
-                                        {/* Název + badge */}
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wide ${badge}`}>
-                                                {game.name}
-                                            </span>
-                                            <span className="text-xs text-gray-400">
-                                                {game.attempts}{" "}
-                                                {game.attempts === 1 ? "hra" : game.attempts <= 4 ? "hry" : "her"}
-                                            </span>
-                                        </div>
-
-                                        {/* Stat řádky */}
-                                        <div className="grid grid-cols-2 gap-3 mb-5">
-                                            <div className="bg-gray-50 rounded-xl p-3 text-center">
-                                                <p className="text-xl font-medium text-gray-900">
-                                                    {game.avgScore}
-                                                    <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
-                                                </p>
-                                                <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Průměr</p>
-                                            </div>
-                                            <div className="bg-gray-50 rounded-xl p-3 text-center">
-                                                <p className="text-xl font-medium text-gray-900">
-                                                    {game.bestScore}
-                                                    <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
-                                                </p>
-                                                <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Nejlepší</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Mini bar chart průměr vs nejlepší */}
-                                        <ResponsiveContainer width="100%" height={80}>
-                                            <BarChart
-                                                data={barData}
-                                                margin={{ top: 0, right: 0, left: -32, bottom: 0 }}
-                                                barCategoryGap="40%"
-                                            >
-                                                <CartesianGrid vertical={false} stroke="#f3f4f6" />
-                                                <XAxis
-                                                    dataKey="label"
-                                                    tick={{ fontSize: 10, fill: "#9ca3af" }}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                />
-                                                <YAxis
-                                                    tick={{ fontSize: 10, fill: "#9ca3af" }}
-                                                    axisLine={false}
-                                                    tickLine={false}
-                                                    tickFormatter={(v) => `${v}${unit}`}
-                                                />
-                                                <Tooltip
-                                                    cursor={{ fill: "#f9fafb" }}
-                                                    content={({ active, payload }) => {
-                                                        if (!active || !payload?.length) return null;
-                                                        return (
-                                                            <div className="bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-sm text-xs">
-                                                                <p className="font-medium text-gray-900">
-                                                                    {payload[0].payload.label}: {payload[0].value}{unit}
-                                                                </p>
-                                                            </div>
-                                                        );
-                                                    }}
-                                                />
-                                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                                    <Cell fill="#9ca3af" />
-                                                    <Cell fill="#111827" />
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
+                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                    <div className="bg-gray-50 rounded-2xl p-4 text-center">
+                                        <p className="text-xl font-medium text-gray-900">
+                                            {game.avgScore}
+                                            <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Průměr</p>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </section>
+                                    <div className="bg-gray-50 rounded-2xl p-4 text-center">
+                                        <p className="text-xl font-medium text-gray-900">
+                                            {game.bestScore}
+                                            <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Nejlepší</p>
+                                    </div>
+                                </div>
 
+                                <div className="border border-gray-100 rounded-2xl p-5">
+                                    {/* Line chart — jen pokud 2+ her */}
+                                    {modeGames.length >= 2 ? (
+                                        <>
+                                            <SectionLabel>Vývoj — klikni na bod pro detail</SectionLabel>
+                                            <ResponsiveContainer width="100%" height={160}>
+                                                <LineChart data={modeGames} margin={{ top: 8, right: 8, left: -28, bottom: 0 }}>
+                                                    <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                                                    <XAxis
+                                                        dataKey="index"
+                                                        tick={{ fontSize: 10, fill: "#9ca3af" }}
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        label={{ value: "hra", position: "insideBottomRight", offset: 0, fontSize: 10, fill: "#d1d5db" }}
+                                                    />
+                                                    <YAxis
+                                                        tick={{ fontSize: 10, fill: "#9ca3af" }}
+                                                        axisLine={false}
+                                                        tickLine={false}
+                                                        tickFormatter={(v) => `${v}${unit}`}
+                                                    />
+                                                    <ReferenceLine y={game.avgScore} stroke="#e5e7eb" strokeDasharray="4 4" />
+                                                    <Tooltip
+                                                        content={(props) => (
+                                                            <GameTooltip {...props} unit={unit} onNavigate={handleNavigate} />
+                                                        )}
+                                                    />
+                                                    <Line
+                                                        type="monotone"
+                                                        dataKey="score"
+                                                        stroke="#111827"
+                                                        strokeWidth={1.5}
+                                                        dot={(props) => <ClickableDot {...props} onNavigate={handleNavigate} />}
+                                                        activeDot={{ r: 6, fill: "#111827", stroke: "white", strokeWidth: 2 }}
+                                                    />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+
+                                            <div className="mt-5 pt-4 border-t border-gray-50 divide-y divide-gray-50">
+                                                {[...modeGames].reverse().slice(0, 5).map((g) => (
+                                                    <button
+                                                        key={g.id}
+                                                        onClick={() => handleNavigate(g.id)}
+                                                        className="w-full flex items-center justify-between py-3 active:bg-gray-50 transition-colors"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-xs text-gray-400 w-4">{g.index}</span>
+                                                            <span className="text-xs text-gray-500">{g.date}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {g.score}
+                                                                <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
+                                                            </span>
+                                                            <span className="text-gray-300 text-xs">→</span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        /* Jen 1 hra — zobrazíme ji bez chartu */
+                                        <div className="divide-y divide-gray-50">
+                                            <SectionLabel>Odehrané hry</SectionLabel>
+                                            {modeGames.map((g) => (
+                                                <button
+                                                    key={g.id}
+                                                    onClick={() => handleNavigate(g.id)}
+                                                    className="w-full flex items-center justify-between py-3 active:bg-gray-50 transition-colors"
+                                                >
+                                                    <span className="text-xs text-gray-500">{g.date}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-medium text-gray-900">
+                                                            {g.score}
+                                                            <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
+                                                        </span>
+                                                        <span className="text-gray-300 text-xs">→</span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {modeGames.length > 5 && (
+                                        <button
+                                            onClick={() => navigate("/history")}
+                                            className="w-full text-center text-[10px] uppercase tracking-widest text-gray-400 pt-3 mt-1 border-t border-gray-50 active:text-gray-700"
+                                        >
+                                            Zobrazit všechny hry ({modeGames.length})
+                                        </button>
+                                    )}
+                                </div>
+                            </section>
+                        );
+                    })
+                )}
             </div>
         </div>
     );
