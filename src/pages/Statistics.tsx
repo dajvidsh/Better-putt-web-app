@@ -49,7 +49,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 function GameTooltip({ active, payload, unit, onNavigate }: {
     active?: boolean;
-    payload?: any[];
+    payload?: readonly any[];
     unit: string;
     onNavigate: (id: number) => void;
 }) {
