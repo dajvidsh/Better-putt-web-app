@@ -4,7 +4,7 @@ import {useState, useEffect} from 'react';
 
 export default function Survival() {
     const navigate = useNavigate();
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
     // 1. Inicializace stavu - zkusíme načíst z cache, jinak default
     const [gameState, setGameState] = useState(() => {

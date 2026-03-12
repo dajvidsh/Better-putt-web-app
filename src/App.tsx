@@ -16,6 +16,7 @@ import Jyly from "./pages/Jyly.tsx";
 import Survival from "./pages/Survival.tsx";
 import Drill from "./pages/Drill.tsx";
 import {useEffect, useRef} from "react";
+import GameDetailStats from "./pages/Gamedetail.tsx";
 
 const Home = () => <Hero/>;
 
@@ -47,6 +48,7 @@ const MainLayout = () => {
                     <Route path="/" element={<Home/>}/>
                     <Route path="/training" element={<Training/>}/>
                     <Route path="/training/:gameId" element={<TrainingDetail/>}/>
+                    <Route path="/history/:gameId" element={<GameDetailStats/>}/>
                     <Route path="/leaderboard" element={<LeaderBoard/>}/>
                     <Route path="/profile" element={<Profile/>}/>
                     <Route path="/statistics" element={<Statistics/>}/>

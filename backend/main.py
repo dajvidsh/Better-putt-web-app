@@ -145,8 +145,10 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         raise credentials_exception
     return user
 
+
 @app.post("/api/trainings/save", response_model=schemas.GameSessionResponse)
-def save_training(session_data: schemas.GameSessionCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def save_training(session_data: schemas.GameSessionCreate, current_user: models.User = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
     user_id = current_user.id
 
     # 2. Vytvoříme hlavní záznam o hře
@@ -226,7 +228,8 @@ def get_user_statistics(current_user: models.User = Depends(get_current_user), d
     formatted_game_stats = []
     for mode, stats in game_stats_dict.items():
         if mode == "drill":
-            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats["total_attempts_sum"] > 0 else 0
+            avg = round((stats["total_makes_sum"] / stats["total_attempts_sum"]) * 100) if stats[
+                                                                                               "total_attempts_sum"] > 0 else 0
             best = stats["best_percentage"]
         else:
             avg = round(stats["total_score_sum"] / stats["attempts"]) if stats["attempts"] > 0 else 0
@@ -278,14 +281,42 @@ def get_games(current_user: models.User = Depends(get_current_user), db: Session
     return games_dict
 
 
+@app.get('/api/games/{game_id}')
+def get_game_detail(game_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    session = db.query(models.GameSession).filter(
+        models.GameSession.id == game_id,
+        models.GameSession.user_id == current_user.id  # bezpečnost - jen vlastní hry
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Hra nenalezena")
+
+    return {
+        "id": session.id,
+        "game_mode_id": session.game_mode_id,
+        "game_name": session.game_mode_id.upper(),
+        "total_score": session.total_score,
+        "total_makes": session.total_makes,
+        "total_attempts": session.total_attempts,
+        "date": session.completed_at.strftime("%d.%m.%Y") if session.completed_at else "Neznámé datum",
+        "rounds": [
+            {
+                "round_number": r.round_number,
+                "distance": r.distance,
+                "attempts": r.attempts,
+                "makes": r.makes,
+                "score_earned": r.score_earned
+            } for r in session.rounds
+        ]
+    }
+
+
 @app.get('/api/game-modes')
 def get_games(db: Session = Depends(get_db)):
-
     sessions = db.query(models.GameMode).order_by(models.GameMode.id).all()
     game_modes_dict = []
 
     for session in sessions:
-
         game_modes_dict.append({
             "id": session.id,
             "name": session.name,
@@ -293,6 +324,7 @@ def get_games(db: Session = Depends(get_db)):
         })
 
     return game_modes_dict
+
 
 @app.get("/api/me", response_model=schemas.UserOut)
 def get_current_user_info(current_user: models.User = Depends(get_current_user)):

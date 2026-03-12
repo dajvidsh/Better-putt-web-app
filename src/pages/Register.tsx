@@ -9,7 +9,7 @@ export default function Register() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();

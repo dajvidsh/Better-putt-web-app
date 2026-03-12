@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 export default function Jyly() {
     const navigate = useNavigate();
     const maxRounds = 20;
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
     // 1. Inicializace stavu z cache nebo default
     const [gameState, setGameState] = useState(() => {

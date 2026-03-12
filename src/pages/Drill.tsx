@@ -4,7 +4,7 @@ import {Target, Settings2, Check, ArrowLeft} from 'lucide-react';
 
 export default function Drill() {
     const navigate = useNavigate();
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
     // 1. Inicializace stavu z cache nebo výchozích hodnot
     const [gameState, setGameState] = useState(() => {
