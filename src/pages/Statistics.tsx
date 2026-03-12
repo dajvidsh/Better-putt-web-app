@@ -52,6 +52,7 @@ function GameTooltip({ active, payload, unit, onNavigate }: {
     payload?: any[];
     unit: string;
     onNavigate: (id: number) => void;
+    [key: string]: any;
 }) {
     if (!active || !payload?.length) return null;
     const g = payload[0].payload;
