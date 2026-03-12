@@ -4,6 +4,7 @@ import {useState, useEffect} from 'react';
 
 export default function Survival() {
     const navigate = useNavigate();
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     // 1. Inicializace stavu - zkusíme načíst z cache, jinak default
     const [gameState, setGameState] = useState(() => {
@@ -124,7 +125,7 @@ export default function Survival() {
         };
 
         try {
-            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
+            const response = await fetch(`${API_BASE_URL}/api/trainings/save`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

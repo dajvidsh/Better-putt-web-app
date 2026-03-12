@@ -4,6 +4,7 @@ import {Target, Settings2, Check, ArrowLeft} from 'lucide-react';
 
 export default function Drill() {
     const navigate = useNavigate();
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     // 1. Inicializace stavu z cache nebo výchozích hodnot
     const [gameState, setGameState] = useState(() => {
@@ -107,7 +108,7 @@ export default function Drill() {
         };
 
         try {
-            const response = await fetch("https://better-putt-web-app-server.onrender.com/api/trainings/save", {
+            const response = await fetch(`${API_BASE_URL}/api/trainings/save`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

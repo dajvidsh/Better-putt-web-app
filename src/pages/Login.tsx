@@ -11,23 +11,23 @@ export default function Login() {
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
     const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+        e.preventDefault();
+        setError('');
 
-    // Použití centrální adresy
-    // const API_URL = `https://better-putt-web-app-server.onrender.com/api/gate`;
-    const API_URL = `${API_BASE_URL}/api/gate`;
+        // Použití centrální adresy
+        // const API_URL = `https://better-putt-web-app-server.onrender.com/api/gate`;
+        const API_URL = `${API_BASE_URL}/api/gate`;
 
-    try {
-        const formData = new URLSearchParams();
-        formData.append('username', email);
-        formData.append('password', password);
+        try {
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', password);
 
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData,
-        });
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: formData,
+            });
 
             if (response.ok) {
                 const data = await response.json();
