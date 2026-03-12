@@ -52,7 +52,6 @@ function GameTooltip({ active, payload, unit, onNavigate }: {
     payload?: any[];
     unit: string;
     onNavigate: (id: number) => void;
-    [key: string]: any;
 }) {
     if (!active || !payload?.length) return null;
     const g = payload[0].payload;
@@ -73,7 +72,7 @@ function GameTooltip({ active, payload, unit, onNavigate }: {
     );
 }
 
-function ClickableDot(props: any) {
+function ClickableDot(props: any & { onNavigate: (id: number) => void | Promise<void> }) {
     const { cx, cy, payload, onNavigate } = props;
     return (
         <circle
@@ -224,8 +223,8 @@ export default function Statistics() {
                                                     />
                                                     <ReferenceLine y={game.avgScore} stroke="#e5e7eb" strokeDasharray="4 4" />
                                                     <Tooltip
-                                                        content={(props) => (
-                                                            <GameTooltip {...props} unit={unit} onNavigate={handleNavigate} />
+                                                        content={({ active, payload }) => (
+                                                            <GameTooltip active={active} payload={payload} unit={unit} onNavigate={handleNavigate} />
                                                         )}
                                                     />
                                                     <Line
